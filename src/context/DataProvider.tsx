@@ -1,7 +1,7 @@
-/* import React, { createContext, useEffect, useState, useContext } from 'react'
+import React, { createContext, useEffect, useState, useContext } from 'react'
 import axios from 'axios'
 import PropTypes from 'prop-types'
-import { UserContext } from '.'
+import { UserContext } from './'
 
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
@@ -65,7 +65,7 @@ const DataProvider = (props: DataProviderProps) => {
       return options.data
     } catch (error: any) {
       if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
+        handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
             getModelOptions(model)
           } else {
@@ -110,7 +110,7 @@ const DataProvider = (props: DataProviderProps) => {
       setModelsOptions(backendOptions)
     } catch (error: any) {
       if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
+        handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
             getData()
           } else {
@@ -143,7 +143,7 @@ const DataProvider = (props: DataProviderProps) => {
       return response
     } catch (error: any) {
       if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
+        handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
             modifyItem(model, id, object)
           } else {
@@ -170,7 +170,7 @@ const DataProvider = (props: DataProviderProps) => {
       return response.data
     } catch (error: any) {
       if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
+        handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
             addItem(model, object)
           } else {
@@ -197,7 +197,7 @@ const DataProvider = (props: DataProviderProps) => {
       return response
     } catch (error: any) {
       if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
+        handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
             deleteItem(model, id)
           } else {
@@ -220,4 +220,3 @@ export default DataProvider
 DataProvider.propTypes = {
   children: PropTypes.node.isRequired
 }
- */

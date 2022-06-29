@@ -1,4 +1,4 @@
-import resolve from '@rollup/plugin-node-resolve'
+import resolve, { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import json from '@rollup/plugin-json'
@@ -23,6 +23,22 @@ export default [
         ],
         plugins: [
             resolve(),
+            nodeResolve({
+                browser: {
+                  "fs": false,
+                  "path": false,
+                  "os": false,
+                  "stream": false,
+                  "http": false,
+                  "tls": false,
+                  "zlib": false,
+                  "https": false,
+                  "net": false,
+                  "tty": false,
+                  "url": false,
+                  "assert": false
+                }
+            }),
             commonjs(),
             typescript({tsconfig: './tsconfig.json'}),
             json()

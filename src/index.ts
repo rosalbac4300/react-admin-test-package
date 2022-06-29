@@ -1,5 +1,3 @@
-import Admin from './components/Admin'
-import AdminApp from './components/AdminApp'
-import Model from './components/Model'
+import { Admin, AdminApp, AdminAuth, Model } from './components'
 
-export { Admin, AdminApp, Model }
+export { Admin, AdminApp, Model, AdminAuth }

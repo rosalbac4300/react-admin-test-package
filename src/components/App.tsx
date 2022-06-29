@@ -5,7 +5,13 @@ import { useWindowSize } from '../hooks'
 import { AppStyled, Wrapper } from '../styled'
 
 interface AppProps {
-  apps: Array<any>
+  apps: Array<any>,
+  auth: {
+    refreshURL: string,
+    loginURL: string,
+    userProviderURL: string ,
+    groupsProviderURL: string | null
+} | null
 }
 
 const App = (props: AppProps) => {
@@ -87,8 +93,8 @@ const App = (props: AppProps) => {
           {/* <Route path="/backend/:model/*" element={<ManageModel />} />
           <Route path="/auth/:model/*" element={<AuthManage />} />
           <Route path="/password_change" element={<PasswordChange currentUser />} /> */}
-          <Route path="/:app" element={<Dashboard apps={props.apps}/>} />
-          <Route path="/" element={<Dashboard apps={props.apps}/>} />
+          <Route path="/:app" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
+          <Route path="/" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
         </Routes>
       </Wrapper>
     </AppStyled>

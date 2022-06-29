@@ -1,13 +1,19 @@
 import React from 'react'
-import { useParams, Link} from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
 import { DashboardStyled, Card, Button } from '../styled'
 import { Header } from '.'
 
 interface AppProps {
-    apps: Array<any>
-  }
+  apps: Array<any>, 
+  auth: {
+    refreshURL: string,
+    loginURL: string,
+    userProviderURL: string ,
+    groupsProviderURL: string | null
+  } | null
+}
   
 const Dashboard = (props: AppProps) => {
   const { app } = useParams()
@@ -19,6 +25,59 @@ const Dashboard = (props: AppProps) => {
         <div className="row">
           <div className="col-12 col-lg-9">
             <div className="row">
+            { props.auth !== null && (
+                <div className="col-6 col-sm-12">
+                  <Card noColouredBorder={false}>
+                    <div className="card-header"> Authentication and Authorization </div>
+                    <div className="card-body">
+                      <table>
+                        <tbody>
+                          <tr>
+                            <td>
+                              <Link to="/auth/users/" className="link">
+                                Users
+                              </Link>
+                            </td>
+                            <td className="buttons">
+                              <Link to="/auth/users/add">
+                                <Button inline primary={false} bgColor="#469408">
+                                  Add
+                                </Button>
+                              </Link>
+                              <Link to="/auth/users/">
+                                <Button inline primary={false} bgColor="#029acf">
+                                  Change
+                                </Button>
+                              </Link>
+                            </td>
+                          </tr>
+                          { props.auth.groupsProviderURL !== null &&(
+                            <tr>
+                              <td>
+                                <Link to="/auth/groups/" className="link">
+                                  Groups
+                                </Link>
+                              </td>
+                              <td className="buttons">
+                                <Link to="/auth/groups/add">
+                                  <Button inline primary={false} bgColor="#469408">
+                                    Add
+                                  </Button>
+                                </Link>
+                                <Link to="/auth/groups/">
+                                  <Button inline primary={false} bgColor="#029acf">
+                                    Change
+                                  </Button>
+                                </Link>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Card>
+                </div>
+              )}
               {props.apps.length !== 0 && props.apps.map((app:any) => {
                   return (
                     <div className="col-6 col-sm-12" key={app.appName}> 

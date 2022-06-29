@@ -1,4 +1,4 @@
-/* import React from 'react'
+import React from 'react'
 import axios from 'axios'
 import { UserContext } from './UserContext'
 
@@ -378,4 +378,3 @@ const UserProvider = (props: UserProviderProps) => {
 }
 
 export default UserProvider
- */

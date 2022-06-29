@@ -1,6 +1,6 @@
 {
   "name": "@rosalbac4300/react-admin",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Database administrator in react",
   "main": "dist/cjs/index.js  ",
   "module": "dist/esm/index.js",
@@ -36,9 +36,9 @@
   },
   "peerDependencies": {
     "react": "18.x",
-    "tslib": "2.x",
     "react-dom": "18.x",
-    "styled-components": "^5.x"
+    "styled-components": "^5.x",
+    "tslib": "2.x"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
