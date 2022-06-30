@@ -86,13 +86,18 @@ const App = (props: AppProps) => {
 
   return (
     <AppStyled>
-      <Sidebar size={sidebarSize} onHover={handleHoverSidebar} apps={props.apps}/>
+      <Sidebar size={sidebarSize} onHover={handleHoverSidebar} apps={props.apps} auth ={props.auth}/>
       <Wrapper ref={wrapper} onClick={handleClickWrapper}>
-        <Navbar onClick={handleClickSidebar} />
+        <Navbar onClick={handleClickSidebar} auth={props.auth} />
         <Routes>
-          {/* <Route path="/backend/:model/*" element={<ManageModel />} />
-          <Route path="/auth/:model/*" element={<AuthManage />} />
-          <Route path="/password_change" element={<PasswordChange currentUser />} /> */}
+          { props.auth !== null && (
+            <>
+              {/* <Route path="/auth/:model/*" element={<AuthManage />} />
+              <Route path="/password_change" element={<PasswordChange currentUser />} /> */}
+            </>
+          )}
+          {/* <Route path="/:app/:model/*" element={<ManageModel apps={props.apps} />} />
+           */}
           <Route path="/:app" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
           <Route path="/" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
         </Routes>

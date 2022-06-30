@@ -3,9 +3,7 @@ import PropTypes from 'prop-types'
 
 const AdminApp = (prop: {dataProviderURL: string, appName: string, children: Array<object>}) => {
   
-  return (
-    <div>App</div>
-  )
+  return <></>
 }
 
 AdminApp.propTypes = {

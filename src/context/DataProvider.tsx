@@ -124,7 +124,7 @@ const DataProvider = (props: DataProviderProps) => {
   }
 
   useEffect(() => {
-    getData()
+    //getData()
   }, [localStorage.getItem('user')])
 
   const modifyItem = async (model: string, id: string, object: any) => {

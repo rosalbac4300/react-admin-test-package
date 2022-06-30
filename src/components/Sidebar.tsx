@@ -2,7 +2,15 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { NavLink, Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUserCircle, faTachometerAlt, faAngleLeft, faCircle, faCircleChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { 
+  faUserCircle,
+  faTachometerAlt, 
+  faAngleLeft, 
+  faCircle, 
+  faCircleChevronRight,
+  faUserCog,
+  faUsers
+} from '@fortawesome/free-solid-svg-icons'
 import {  } from '@fortawesome/free-regular-svg-icons'
 import { SidebarStyled } from '../styled'
 import { useWindowSize } from '../hooks'
@@ -12,16 +20,27 @@ import { useWindowSize } from '../hooks'
 interface SidebarProps {
   size: string,
   onHover: () => void,
-  apps: Array<any>
+  apps: Array<any>,
+  auth: {
+    refreshURL: string,
+    loginURL: string,
+    userProviderURL: string ,
+    groupsProviderURL: string | null
+  } | null
 }
 
 const Sidebar = (props: SidebarProps) => {
   const aside = useRef<any>()
   const width = useWindowSize()
  // const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
-  //const { models, modelsOptions } = useContext(DataContext)
   //const { listIncludesPermission } = useContext(UserContext)
   const [isDropdownOpen, setIsDropdownOpen] = useState<Array<boolean>>([])
+  const [isAuthDropdownOpen, setisAuthDropdownOpen] = useState<boolean>(false)
+
+  const handleDropdownAuth = useCallback(() => {
+    setisAuthDropdownOpen((val) => !val)
+    setDropdownOpenArray()
+  }, [])
 
   const setDropdownOpenArray = useCallback(() => {
     const array = props.apps.map((app:any) => false)
@@ -63,6 +82,7 @@ const Sidebar = (props: SidebarProps) => {
 
       return array
     })
+    setisAuthDropdownOpen(false)
   }, [])
 
   useEffect(() => {
@@ -87,7 +107,7 @@ const Sidebar = (props: SidebarProps) => {
         {props.size === '250px' && <span> Username </span>}
       </Link>
 
-      {(props.apps.length !== 0 && isDropdownOpen.length !== 0) && (<nav className="sb-navigation">
+      <nav className="sb-navigation">
         <ul className="sb-nav">
           <li className="sb-nav-item">
             <NavLink to="/" className={({ isActive }) => (isActive ? 'sb-nav-link nav-link-active' : 'sb-nav-link')}>
@@ -97,49 +117,101 @@ const Sidebar = (props: SidebarProps) => {
               {props.size === '250px' && <span> Dashboard </span>}
             </NavLink>
           </li>
-          { props.apps.map((app :  any, i : number) => {
-            return (
-              <li className="sb-nav-item" key={i}>
-                <div className="sb-nav-link" onClick={() => handleDropdown(i)}>
+          {props.auth !== null && (
+            <li className="sb-nav-item">
+              <div className="sb-nav-link" onClick={handleDropdownAuth}>
                 <div className="icon">
-                  <FontAwesomeIcon icon={faCircleChevronRight} />
+                  <FontAwesomeIcon icon={faUserCog} />
                 </div>
-                  {props.size === '250px' && (
-                    <>
-                      <span> {app.appName} </span>
-                      <div className="arrow">
-                        { isDropdownOpen[i] ? 
-                          <FontAwesomeIcon icon={faAngleLeft} rotation={270}/> :
-                          <FontAwesomeIcon icon={faAngleLeft} />
-                        }
+                {props.size === '250px' && (
+                  <>
+                    <span> Authentication and  ... </span>
+                    <div className="arrow">
+                      { isAuthDropdownOpen ? 
+                        <FontAwesomeIcon icon={faAngleLeft} rotation={270}/> :
+                        <FontAwesomeIcon icon={faAngleLeft} />
+                      }
+                    </div>
+                  </>
+                )}
+              </div>
+              <ul className="nav nav-child">
+                { isAuthDropdownOpen && (
+                  <>
+                    <li className="sb-nav-item">
+                      <NavLink
+                        to="/auth/groups"
+                        className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
+                        >
+                      <div className="icon">
+                        <FontAwesomeIcon icon={faUsers}/>
                       </div>
-                    </>
-                  )}
-                </div>
-                <ul className="nav nav-child">
-                  {isDropdownOpen[i] && (
-                    app.children.map((child: any) => {
-                      return (
-                        <li className="sb-nav-item" key={child.modelName}>
-                            <NavLink
-                              to={`/${app.appName}/${child.modelName}`}
-                              className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
-                            >
-                              <div className="icon">
-                                <FontAwesomeIcon icon={faCircle}/>
-                              </div>
-                              {props.size === '250px' && <span> {child.modelName} </span>}
-                            </NavLink>
-                        </li>
-                      )
-                    })
-                  )}
-                </ul>
-              </li>
-            )
-          })}
+                        {props.size === '250px' && <span> Groups </span>}
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/auth/groups"
+                        className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
+                        >
+                      <div className="icon">
+                        <FontAwesomeIcon icon={faUsers}/>
+                      </div>
+                        {props.size === '250px' && <span> Users </span>}
+                      </NavLink>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </li>
+          )}
+          {(props.apps.length !== 0 && isDropdownOpen.length !== 0) && (
+            <>
+            { props.apps.map((app :  any, i : number) => {
+              return (
+                <li className="sb-nav-item" key={i}>
+                  <div className="sb-nav-link" onClick={() => handleDropdown(i)}>
+                  <div className="icon">
+                    <FontAwesomeIcon icon={faCircleChevronRight} />
+                  </div>
+                    {props.size === '250px' && (
+                      <>
+                        <span> {app.appName} </span>
+                        <div className="arrow">
+                          { isDropdownOpen[i] ? 
+                            <FontAwesomeIcon icon={faAngleLeft} rotation={270}/> :
+                            <FontAwesomeIcon icon={faAngleLeft} />
+                          }
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <ul className="nav nav-child">
+                    {isDropdownOpen[i] && (
+                      app.children.map((child: any) => {
+                        return (
+                          <li className="sb-nav-item" key={child.modelName}>
+                              <NavLink
+                                to={`/${app.appName}/${child.modelName}`}
+                                className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
+                              >
+                                <div className="icon">
+                                  <FontAwesomeIcon icon={faCircle}/>
+                                </div>
+                                {props.size === '250px' && <span> {child.modelName} </span>}
+                              </NavLink>
+                          </li>
+                        )
+                      })
+                    )}
+                  </ul>
+                </li>
+              )
+            })}
+          </>
+          )}
         </ul>
-      </nav>)}
+      </nav>
     </SidebarStyled>
   )
 }

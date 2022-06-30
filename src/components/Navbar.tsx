@@ -5,26 +5,32 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faKey, faUsers } from '@fortawesome/free-solid-svg-icons'
 import { faUser } from '@fortawesome/free-regular-svg-icons'
 import { Card, NavbarStyled } from '../styled'
-//import { UserContext } from '../context/UserProvider'
+import { UserContext } from '../context'
 
 interface NavbarProps {
-  onClick: (event: any) => void
+  onClick: (event: any) => void,
+  auth: {
+    refreshURL: string,
+    loginURL: string,
+    userProviderURL: string ,
+    groupsProviderURL: string | null
+  } | null
 }
 
 const Navbar = (props: NavbarProps) => {
   const navigate = useNavigate()
   const [popup, setPopup] = useState(false)
-  //const { handleLogout, listIncludesPermission } = useContext(UserContext)
+  const { handleLogout, listIncludesPermission } = useContext(UserContext)
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
 
   const handleUserMenuClick = useCallback(() => {
     setPopup((value) => !value)
   }, [])
 
-  /* const logout = () => {
+  const logout = () => {
     handleLogout()
     navigate('/login')
-  } */
+  }
 
   return (
     <NavbarStyled>
@@ -37,11 +43,13 @@ const Navbar = (props: NavbarProps) => {
         <li className="nav-link">
           <i className="fas fa-th"></i>
         </li>
-        <li className="nav-link">
-          <button className="nav-button" onClick={handleUserMenuClick}>
-           <FontAwesomeIcon icon={faUser} />
-          </button>
-        </li>
+        { props.auth !== null && (
+          <li className="nav-link">
+            <button className="nav-button" onClick={handleUserMenuClick}>
+            <FontAwesomeIcon icon={faUser} />
+            </button>
+          </li>
+        )}
       </ul>
       {popup && (
         <Card noColouredBorder className="popup">

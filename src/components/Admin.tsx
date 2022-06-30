@@ -4,10 +4,10 @@ import PropTypes from 'prop-types'
 import { App } from '.'
 import { DataProvider, UserProvider } from '../context'
 
-/* const ProtectedRoute = (props: {children: JSX.Element | JSX.Element[]}) => {
+const ProtectedRoute = (props: {children: JSX.Element | JSX.Element[]}) => {
     if (localStorage.getItem('access') === null) return <Navigate to={'/login'} replace />
     return props.children
-} */
+}
 
 interface AuthType {
     refreshURL: string,
@@ -16,44 +16,80 @@ interface AuthType {
     groupsProviderURL: string | null
 }
 
-const Admin = (prop: {children: Array<any>}) => {
+const Admin = (prop: {children: any}) => {
     const [adminApps, setAdminApps] = useState<Array<any>>([])
     const [adminAuth, setAdminAuth] = useState<AuthType | null>(null)
 
     const getApps = useCallback(() => {
-        const filteredChildren = prop.children.filter((element: any) => element.type.name === "AdminApp")
-        const auth = prop.children.filter((element: any) => element.type.name === "AdminAuth")
-
-        if (auth.length > 1) {
-            console.error("There cam only be one AdminAuth element")
-        } else if (auth.length === 1){
-            const admAuth = {
-                refreshURL: auth[0].props.refreshURL,
-                loginURL: auth[0].props.loginURL,
-                userProviderURL: auth[0].props.userProviderURL,
-                groupsProviderURL: auth[0].props.groupsProviderURL  
+        if (prop.children === undefined) {
+            console.error("A child 'AdminApp' or 'AdminAuth' component is needed.")
+        } else if(prop.children.length === undefined) {
+            if (prop.children.type.name === "AdminApp") {
+                const app = {
+                    appName: prop.children.props.appName,
+                    children: getAppChildren(prop.children.props.children),
+                    providerUrl: prop.children.props.dataProviderURL
+                }
+                setAdminApps([app])
             }
-            setAdminAuth(admAuth)
+            if (prop.children.type.name === "AdminAuth") {
+                const admAuth = {
+                    refreshURL: prop.children.props.refreshURL,
+                    loginURL: prop.children.props.loginURL,
+                    userProviderURL: prop.children.props.userProviderURL,
+                    groupsProviderURL: prop.children.props.groupsProviderURL  
+                }
+                setAdminAuth(admAuth)
+            }
+        } else {
+            const filteredChildren = prop.children.filter((element: any) => element.type.name === "AdminApp")
+            const auth = prop.children.filter((element: any) => element.type.name === "AdminAuth")
+    
+            if (auth.length > 1) {
+                console.error("There cam only be one AdminAuth element")
+            } else if (auth.length === 1){
+                const admAuth = {
+                    refreshURL: auth[0].props.refreshURL,
+                    loginURL: auth[0].props.loginURL,
+                    userProviderURL: auth[0].props.userProviderURL,
+                    groupsProviderURL: auth[0].props.groupsProviderURL  
+                }
+                setAdminAuth(admAuth)
+            }
+            
+            const apps = filteredChildren.map((element: any) => {
+                const elemChildren = getAppChildren(element.props.children)
+                const app = {
+                    appName: element.props.appName,
+                    children: elemChildren,
+                    providerUrl: element.props.dataProviderURL
+                }
+                
+                return app
+            })
+    
+            setAdminApps(apps)
         }
-        
-        const apps = filteredChildren.map((element: any) => {
-            const elemChildren = element.props.children.map((child: any) => {
+    }, [prop.children])
+
+    const getAppChildren = (children : any) => {
+        if (children === undefined) {
+            console.error("At least one child 'Model' component is expected inside 'AdminApp' component")
+            return []
+        } else if (children.length === undefined) {
+            const child = {
+                modelName: children.props.modelName
+            }
+            return [child]
+        } else {
+            const elemChildren = children.map((child: any) => {
                 return ({
                     modelName: child.props.modelName
                 })
             })
-
-            const app = {
-                appName: element.props.appName,
-                children: elemChildren,
-                providerUrl: element.props.dataProviderURL
-            }
-            
-            return app
-        })
-
-        setAdminApps(apps)
-    }, [prop.children])
+            return elemChildren
+        }
+    }
 
     useEffect(() => {
         getApps()
