@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import useBreadcrumbs from 'use-react-router-breadcrumbs'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTachometerAlt } from '@fortawesome/free-solid-svg-icons'
-import { HeaderStyled } from '../styled'
+import HeaderStyled from './Styles'
 //import { DataContext, UserContext } from '../context'
 
 const Header = (props: { title: string }) => {

@@ -4,8 +4,9 @@ import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faKey, faUsers } from '@fortawesome/free-solid-svg-icons'
 import { faUser } from '@fortawesome/free-regular-svg-icons'
-import { Card, NavbarStyled } from '../styled'
-import { UserContext } from '../context'
+import NavbarStyled from './Styles'
+import { Card } from '../../common'
+import { UserContext } from '../../context'
 
 interface NavbarProps {
   onClick: (event: any) => void,

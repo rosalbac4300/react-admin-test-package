@@ -12,9 +12,9 @@ import {
   faUsers
 } from '@fortawesome/free-solid-svg-icons'
 import {  } from '@fortawesome/free-regular-svg-icons'
-import { SidebarStyled } from '../styled'
-import { useWindowSize } from '../hooks'
-//import img from '../img/img'
+import SidebarStyled from './Styles'
+import { useWindowSize } from '../../hooks'
+import img from '../../img/img'
 //import { DataContext, UserContext } from '../context'
 
 interface SidebarProps {
@@ -97,7 +97,7 @@ const Sidebar = (props: SidebarProps) => {
   return (
     <SidebarStyled ref={aside} className="sidebar" onMouseEnter={props.onHover} onMouseLeave={props.onHover}>
       <Link to="/" className="sb-logo">
-        {/* <img src={img.logo} height="27px" alt=""></img> */}
+        <img src={img.logo} height="27px" alt=""></img>
         {props.size === '250px' && <span> Admin </span>}
       </Link>
       <Link to={`/auth/users/user}/change`} className="sb-user">

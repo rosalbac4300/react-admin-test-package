@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import { Navbar, Sidebar, Dashboard/* , ManageModel, AuthManage, PasswordChange */ } from '../components'
+import { Navbar, Sidebar, Wrapper } from '../common'
+import { Dashboard } from '../pages'
+import { /* , ManageModel, AuthManage, PasswordChange */ } from '.'
 import { useWindowSize } from '../hooks'
-import { AppStyled, Wrapper } from '../styled'
+import GlobalStyles from '../helpers/GlobalStyles'
 
 interface AppProps {
   apps: Array<any>,
@@ -85,11 +87,11 @@ const App = (props: AppProps) => {
   }, [openSidebar])
 
   return (
-    <AppStyled>
+    <Routes>
+      <GlobalStyles />
       <Sidebar size={sidebarSize} onHover={handleHoverSidebar} apps={props.apps} auth ={props.auth}/>
       <Wrapper ref={wrapper} onClick={handleClickWrapper}>
         <Navbar onClick={handleClickSidebar} auth={props.auth} />
-        <Routes>
           { props.auth !== null && (
             <>
               {/* <Route path="/auth/:model/*" element={<AuthManage />} />
@@ -97,12 +99,11 @@ const App = (props: AppProps) => {
             </>
           )}
           {/* <Route path="/:app/:model/*" element={<ManageModel apps={props.apps} />} />
-           */}
+          */}
           <Route path="/:app" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
           <Route path="/" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
-        </Routes>
       </Wrapper>
-    </AppStyled>
+    </Routes>
   )
 }
 

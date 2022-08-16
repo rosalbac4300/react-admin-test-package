@@ -1,7 +1,7 @@
-import styled from 'styled-components'
+import { createGlobalStyle } from "styled-components"
 
-const AppStyled = styled.div`
-  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
+const GlobalStyles = createGlobalStyle`
+    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   background-color: #fcfcfc;
   * {
@@ -183,4 +183,4 @@ const AppStyled = styled.div`
   }
 `
 
-export default AppStyled
+export default GlobalStyles

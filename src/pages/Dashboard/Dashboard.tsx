@@ -2,8 +2,9 @@ import React from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
-import { DashboardStyled, Card, Button } from '../styled'
-import { Header } from '.'
+import { Card, Button } from '../../common'
+import { Header } from '../../common'
+import DashboardStyled from "./Styles"
 
 interface AppProps {
   apps: Array<any>, 
