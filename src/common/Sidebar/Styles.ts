@@ -21,7 +21,7 @@ const SidebarStyled = styled.div`
     flex-direction: row;
     align-items: center;
     overflow: hidden;
-    height: auto;
+    height: 55.5px;
     padding: 10px 12px 10px 12px;
     border-bottom: solid 1px rgb(75, 84, 92);
     color: #c2c7d0;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import GlobalStyles from '../helpers/GlobalStyles'
 import { App } from '.'
 import { DataProvider, UserProvider } from '../context'
 
@@ -99,6 +100,7 @@ const Admin = (prop: {children: any}) => {
         <DataProvider>
             <UserProvider>
                 <BrowserRouter>
+                    <GlobalStyles />
                     <Routes>
                         <Route path="/*" element={<App apps={adminApps} auth={adminAuth}/>}/>
                     </Routes>
