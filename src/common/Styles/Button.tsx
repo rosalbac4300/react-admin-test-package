@@ -1,8 +1,8 @@
 import styled from 'styled-components'
 
 interface ButtonProps {
-  inline: boolean, 
-  primary: boolean, 
+  inline?: boolean, 
+  primary?: boolean, 
   bgColor: string
 }
 

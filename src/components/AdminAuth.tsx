@@ -6,7 +6,9 @@ interface AdminAuthProps {
     refreshURL: string,
     loginURL: string,
     userProviderURL: string ,
-    groupsProviderURL: string | null
+    groupsProviderURL?: string,
+    permissionsURL: string,
+    deleteUser: string
 }
 
 const AdminAuth = (props: AdminAuthProps) => {

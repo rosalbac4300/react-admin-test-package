@@ -1,19 +1,34 @@
-import React from 'react'
+import React, { useState } from 'react'
 import axios from 'axios'
 import { UserContext } from './UserContext'
 
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 
+//TODO: improve this link thing, there's too many links for user !!!
+
 interface UserProviderProps{
-  children: JSX.Element | JSX.Element[]
+  children: JSX.Element | JSX.Element[],
+  refreshURL: string,
+  loginURL: string,
+  userProviderURL: string, 
+  groupsProviderURL: string,
+  permissionsURL: string,
+  deleteUser: string,
+  registerUser: string,
+  changePassword: string
 }
 
 const UserProvider = (props: UserProviderProps) => {
-  
   const handleLogin = async (username: string, password: string) => {
-    const url = '/api-auth/login/'
     const data = { username: username, password: password }
+    var url
+
+    if(props.loginURL.slice(-1) !== '/'){
+      url = props.loginURL + '/'
+    } else {
+      url = props.loginURL
+    }
 
     try {
       const result = await axios.post(url, data)
@@ -39,9 +54,18 @@ const UserProvider = (props: UserProviderProps) => {
     }
   }
 
-  const handleRefreshToken = async () => {
-    try {
-      const result = await axios.post('/api-auth/refresh/', { refresh: localStorage.getItem('refreshToken') })
+  //ERROR saying handleRefreshToken is not a function 
+  const handleRefreshToken = async () => {  
+    var url
+
+    if(props.refreshURL.slice(-1) !== '/'){
+      url = props.refreshURL + '/'
+    } else {
+      url = props.refreshURL
+    }
+
+    try {   
+      const result = await axios.post(url, { refresh: localStorage.getItem('refreshToken') })
 
       if (result.status === 200) {
         const refresh = localStorage.getItem('refreshToken')
@@ -55,7 +79,7 @@ const UserProvider = (props: UserProviderProps) => {
     } catch (error) {
       return 400
     }
-  }
+  } 
 
   const handleLogout = async () => {
     localStorage.clear()
@@ -63,8 +87,16 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const getUsers = async () => {
+    var url
+
+    if(props.userProviderURL.slice(-1) !== '/'){
+      url = props.userProviderURL + '/'
+    } else {
+      url = props.userProviderURL
+    }
+
     try {
-      const resultUsers = await axios.get('/api-auth/users/', {
+      const resultUsers = await axios.get(url, {
         headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
       })
 
@@ -85,8 +117,16 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const getGroups = async () => {
+    var url
+
+    if(props.groupsProviderURL.slice(-1) !== '/'){
+      url = props.groupsProviderURL + '/'
+    } else {
+      url = props.groupsProviderURL
+    }
+
     try {
-      const resultGroups = await axios.get('/api-auth/groups', {
+      const resultGroups = await axios.get(url, {
         headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
       })
 
@@ -107,8 +147,16 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const getPermissions = async () => {
+    var url
+
+    if(props.permissionsURL.slice(-1) !== '/'){
+      url = props.permissionsURL + '/'
+    } else {
+      url = props.permissionsURL
+    }
+
     try {
-      const resultPermissions = await axios.get('/api-auth/permissions/', {
+      const resultPermissions = await axios.get(url, {
         headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
       })
 
@@ -129,9 +177,17 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const deleteUser = async (id: string) => {
+    var url
+
+    if(props.deleteUser.slice(-1) !== '/'){
+      url = props.deleteUser + '/'
+    } else {
+      url = props.deleteUser
+    }
+
     try {
       const response = await axios.post(
-        '/api-auth/delete/',
+        url,
         { pk: id },
         {
           headers: {
@@ -160,7 +216,13 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const modifyUser = async (data: object, id: string) => {
-    const url = `/api-auth/users/${id}/`
+    var url
+
+    if(props.userProviderURL.slice(-1) !== '/'){
+      url = `${props.userProviderURL}/${id}/`
+    } else {
+      url = `${props.userProviderURL}${id}/`
+    }
 
     try {
       const response = await axios.put(url, data, {
@@ -189,7 +251,13 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const registerUser = async (data: object) => {
-    const url = '/api-auth/register/'
+    var url
+
+    if(props.registerUser.slice(-1) !== '/'){
+      url = `${props.registerUser}/`
+    } else {
+      url = props.registerUser
+    }
 
     try {
       const response = await axios.post(url, data, {
@@ -218,7 +286,13 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const updatePassword = async (data: object) => {
-    const url = `/api-auth/change_password/`
+    var url
+
+    if(props.changePassword.slice(-1) !== '/'){
+      url = `${props.changePassword}/`
+    } else {
+      url = props.changePassword
+    }
 
     try {
       const response = await axios.put(url, data, {
@@ -248,7 +322,13 @@ const UserProvider = (props: UserProviderProps) => {
 
   //TODO: Hacer que pida data y url
   const updateUserPassword = async (data: any) => {
-    const url = `/api-auth/change_password/${data.id}/`
+    var url
+
+    if(props.changePassword.slice(-1) !== '/'){
+      url = `${props.changePassword}/${data.id}`
+    } else {
+      url = `${props.changePassword}${data.id}`
+    }
 
     try {
       const response = await axios.put(url, data, {
@@ -277,7 +357,13 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const addGroup = async (data: object) => {
-    const url = '/api-auth/groups/'
+    var url
+
+    if(props.groupsProviderURL.slice(-1) !== '/'){
+      url = props.groupsProviderURL+'/'
+    } else {
+      url = props.groupsProviderURL
+    }
 
     try {
       const response = await axios.post(url, data)
@@ -294,7 +380,13 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const modifyGroup = async (data: object, id: string) => {
-    const url = `/api-auth/groups/${id}/`
+    var url
+
+    if(props.groupsProviderURL.slice(-1) !== '/'){
+      url = `${props.groupsProviderURL}/${id}/`
+    } else {
+      url = `${props.groupsProviderURL}${id}/`
+    }
 
     try {
       const response = await axios.put(url, data)
@@ -311,7 +403,13 @@ const UserProvider = (props: UserProviderProps) => {
   }
 
   const deleteGroup = async (id: string) => {
-    const url = `/api-auth/groups/${id}/`
+    var url
+
+    if(props.groupsProviderURL.slice(-1) !== '/'){
+      url = `${props.groupsProviderURL}/${id}/`
+    } else {
+      url = `${props.groupsProviderURL}${id}/`
+    }
 
     try {
       const response = await axios.delete(url)

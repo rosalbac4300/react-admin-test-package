@@ -7,13 +7,11 @@ axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 
 interface DataContextProps {
-  models: Array<any> | null,
-  getModelData(model: string): Promise<any>, 
-  modelsOptions: Array<any> | null,
-  modifyItem(model: string, id: string, object: any): Promise<any>,
-  deleteItem(model: string, id: string): Promise<any>,
-  addItem(model: string, object: object): Promise<any>,
-  getData(): Promise<any> 
+  getModelData(providerURL: string, model: string): Promise<any>, 
+  getModelOptions(providerURL: string, model: string): Promise<any>,
+  modifyItem(providerURL: string, model: string, id: string, object: any): Promise<any>,
+  deleteItem(providerURL: string, model: string, id: string): Promise<any>,
+  addItem(providerURL: string, model: string, object: object): Promise<any>
 }
 
 export const DataContext = createContext<DataContextProps>({} as DataContextProps)
@@ -23,13 +21,10 @@ interface DataProviderProps {
 }
 
 const DataProvider = (props: DataProviderProps) => {
-  const [models, setModels] = useState<any>(null)
-  const [modelsOptions, setModelsOptions] = useState<any>(null)
-
   const { handleLogout, handleRefreshToken } = useContext(UserContext)
 
-  const getModelData = async (model: string) => {
-    const url = `/api/${model}/`
+  const getModelData = async (providerURL: string, model: string) => {
+    const url = `${providerURL}/${model}/`
 
     try {
       const data = await axios.get(url, {
@@ -39,21 +34,20 @@ const DataProvider = (props: DataProviderProps) => {
       return data.data
     } catch (error: any) {
       if (error.response.status == 401) {
-        handleRefreshToken().then((refresh: number) => {
-          if (refresh === 200) {
-            getModelData(model)
-          } else {
-            if (window.location.pathname.split('/').pop() !== 'login') {
-              handleLogout()
-            }
+        const refresh = await handleRefreshToken()
+        if (refresh === 200) {
+          getModelData(providerURL, model)
+        } else {
+          if (window.location.pathname.split('/').pop() !== 'login') {
+            handleLogout()
           }
-        })
+        }
       }
     }
   }
 
-  const getModelOptions = async (model: string) => {
-    const url = `/api/${model}/`
+  const getModelOptions = async (providerURL: string, model: string) => {
+    const url = `${providerURL}/${model}/`
 
     try {
       const options = await axios({
@@ -67,7 +61,7 @@ const DataProvider = (props: DataProviderProps) => {
       if (error.response.status == 401) {
         handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
-            getModelOptions(model)
+            getModelOptions(providerURL, model)
           } else {
             if (window.location.pathname.split('/').pop() !== 'login') {
               handleLogout()
@@ -78,57 +72,8 @@ const DataProvider = (props: DataProviderProps) => {
     }
   }
 
-  const getData = async () => {
-    try {
-      const response = await axios({
-        method: 'GET',
-        url: '/api/',
-        headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
-      })
-
-      const data = response.data
-      const backendModels = Object.keys(data)
-      setModels(backendModels)
-
-      var backendOptions = {}
-
-      for (const model of backendModels) {
-        const url = `/api/${model}/`
-
-        const options = await axios({
-          method: 'OPTIONS',
-          url: url,
-          headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
-        })
-
-        backendOptions = {
-          ...backendOptions,
-          [model]: options.data
-        }
-      }
-
-      setModelsOptions(backendOptions)
-    } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh: any) => {
-          if (refresh === 200) {
-            getData()
-          } else {
-            if (window.location.pathname.split('/').pop() !== 'login') {
-              handleLogout()
-            }
-          }
-        })
-      }
-    }
-  }
-
-  useEffect(() => {
-    //getData()
-  }, [localStorage.getItem('user')])
-
-  const modifyItem = async (model: string, id: string, object: any) => {
-    const url = `/api/${model}/${id}/`
+  const modifyItem = async (providerURL: string, model: string, id: string, object: any) => {
+    const url = `${providerURL}/${model}/${id}/`
 
     try {
       const response = await axios.put(url, object, {
@@ -145,7 +90,7 @@ const DataProvider = (props: DataProviderProps) => {
       if (error.response.status == 401) {
         handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
-            modifyItem(model, id, object)
+            modifyItem(providerURL, model, id, object)
           } else {
             handleLogout()
           }
@@ -154,8 +99,8 @@ const DataProvider = (props: DataProviderProps) => {
     }
   }
 
-  const addItem = async (model: string, object: object) => {
-    const url = `/api/${model}/`
+  const addItem = async (providerURL: string, model: string, object: object) => {
+    const url = `${providerURL}/${model}/`
 
     const response = await axios.post(url, object, {
       headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
@@ -172,7 +117,7 @@ const DataProvider = (props: DataProviderProps) => {
       if (error.response.status == 401) {
         handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
-            addItem(model, object)
+            addItem(providerURL, model, object)
           } else {
             handleLogout()
           }
@@ -181,8 +126,8 @@ const DataProvider = (props: DataProviderProps) => {
     }
   }
 
-  const deleteItem = async (model: string, id: string) => {
-    const url = `/api/${model}/${id}`
+  const deleteItem = async (providerURL: string, model: string, id: string) => {
+    const url = `${providerURL}/${model}/${id}`
 
     try {
       const response = await axios.delete(url, {
@@ -199,7 +144,7 @@ const DataProvider = (props: DataProviderProps) => {
       if (error.response.status == 401) {
         handleRefreshToken().then((refresh: any) => {
           if (refresh === 200) {
-            deleteItem(model, id)
+            deleteItem(providerURL, model, id)
           } else {
             handleLogout()
           }
@@ -209,7 +154,7 @@ const DataProvider = (props: DataProviderProps) => {
   }
 
   return (
-    <DataContext.Provider value={{ models, getModelData, modelsOptions, modifyItem, deleteItem, addItem, getData }}>
+    <DataContext.Provider value={{ getModelData, getModelOptions, modifyItem, deleteItem, addItem }}>
       {props.children}
     </DataContext.Provider>
   )

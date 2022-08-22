@@ -1,10 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useContext } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import { Navbar, Sidebar } from '../common'
-import { Dashboard } from '../pages'
-import { /* , ManageModel, AuthManage, PasswordChange */ } from '.'
+import { Navbar, Sidebar, Wrapper } from '../common'
+import { Dashboard  , ModelManage, AuthManage, PasswordChange } from '../pages'
 import { useWindowSize } from '../hooks'
-import { Wrapper } from '../common'
 
 interface AppProps {
   apps: Array<any>,
@@ -12,7 +10,11 @@ interface AppProps {
     refreshURL: string,
     loginURL: string,
     userProviderURL: string ,
-    groupsProviderURL: string | null
+    groupsProviderURL: string,
+    permissionsURL: string,
+    deleteUser: string,
+    registerUser: string,
+    changePassword: string    
 } | null
 }
 
@@ -92,14 +94,9 @@ const App = (props: AppProps) => {
       <Wrapper ref={wrapper} onClick={handleClickWrapper}>
         <Navbar onClick={handleClickSidebar} auth={props.auth} />
         <Routes>
-          { props.auth !== null && (
-            <>
-              {/* <Route path="/auth/:model/*" element={<AuthManage />} />
-              <Route path="/password_change" element={<PasswordChange currentUser />} /> */}
-            </>
-          )}
-          {/* <Route path="/:app/:model/*" element={<ManageModel apps={props.apps} />} />
-           */}
+          <Route path="/auth/:model/*" element={<AuthManage />} />
+         {/*  <Route path="/password_change" element={<PasswordChange currentUser />} /> */}
+          <Route path="/:app/:model/*" element={<ModelManage apps={props.apps} auth={props.auth}/>} />
           <Route path="/:app" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
           <Route path="/" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
         </Routes>

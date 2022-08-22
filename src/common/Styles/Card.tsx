@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 interface CardProps{
-  noColouredBorder : boolean
+  noColouredBorder?: boolean
 }
 
 const Card = styled.div<CardProps>`

@@ -1,17 +1,18 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-//Puedo tomar>  
-// - ModelName
-// - ModelNamePlural (que si no esta solamente le agrego una s al final como hce django)
-// - apiURLname que seria lo que pondriamos en la url
-
-const Model = (props: {modelName: string}) => {
+const Model = (props: {
+  modelName: string
+  modelNamePlural?: string,
+  apiURLName?: string  
+}) => {
   return (<></>)
 }
 
 Model.propTypes = {
-    modelName: PropTypes.string.isRequired
+    modelName: PropTypes.string.isRequired,
+    modelNamePlural: PropTypes.string,
+    apiURLName: PropTypes.string
 }
 
 export default Model

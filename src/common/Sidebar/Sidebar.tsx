@@ -25,7 +25,11 @@ interface SidebarProps {
     refreshURL: string,
     loginURL: string,
     userProviderURL: string ,
-    groupsProviderURL: string | null
+    groupsProviderURL: string,
+    permissionsURL: string,
+    deleteUser: string,
+    registerUser: string,
+    changePassword: string
   } | null
 }
 

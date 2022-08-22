@@ -1,9 +1,9 @@
 import React, { createContext } from 'react'
 
 interface ContextValue {
-    handleLogin: (username: string, password: string) => Promise<object>,
+    handleLogin: (username: string, password: string) => Promise<any>,
     handleLogout: () => Promise<void>,
-    handleRefreshToken(): Promise<200 | 400>,
+    handleRefreshToken: () => Promise<200 | 400>,
     deleteUser(id: string): Promise<string | void>,
     modifyUser(data: object, id: string): Promise<string | void>,
     registerUser(data: object): any,

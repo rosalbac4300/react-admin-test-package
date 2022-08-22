@@ -12,7 +12,11 @@ interface AppProps {
     refreshURL: string,
     loginURL: string,
     userProviderURL: string ,
-    groupsProviderURL: string | null
+    groupsProviderURL: string,
+    permissionsURL: string,
+    deleteUser: string,
+    registerUser: string,
+    changePassword: string
   } | null
 }
   
@@ -26,7 +30,7 @@ const Dashboard = (props: AppProps) => {
         <div className="row">
           <div className="col-12 col-lg-9">
             <div className="row">
-            { props.auth !== null && (
+            { props.auth !== null && ( !app || app === 'auth') && (
                 <div className="col-6 col-sm-12">
                   <Card noColouredBorder={false}>
                     <div className="card-header"> Authentication and Authorization </div>
@@ -52,7 +56,7 @@ const Dashboard = (props: AppProps) => {
                               </Link>
                             </td>
                           </tr>
-                          { props.auth.groupsProviderURL !== null &&(
+                          { props.auth.groupsProviderURL !== null && (
                             <tr>
                               <td>
                                 <Link to="/auth/groups/" className="link">
@@ -79,29 +83,30 @@ const Dashboard = (props: AppProps) => {
                   </Card>
                 </div>
               )}
-              {props.apps.length !== 0 && props.apps.map((app:any) => {
+              {props.apps.length !== 0 && props.apps.map((oneApp:any) => {
+                if (!app || app === oneApp.appName) {
                   return (
-                    <div className="col-6 col-sm-12" key={app.appName}> 
+                    <div className="col-6 col-sm-12" key={oneApp.appName}> 
                       <Card noColouredBorder={false}>
-                        <div className="card-header">{app.appName}</div>
+                        <div className="card-header">{oneApp.appName}</div>
                         <div className="card-body">
                           <table>
                             <tbody>
-                              { app.children.map((child: any) => {
+                              { oneApp.children.map((child: any) => {
                                 return (
                                   <tr key={child.modelName}>
                                     <td>
-                                      <Link to={`/${app.appName}/${child.modelName}/`} className="link">
+                                      <Link to={`/${oneApp.appName}/${child.modelName}/`} className="link">
                                         {child.modelName}
                                       </Link>
                                     </td>
                                     <td className="buttons">
-                                      <Link to={`/${app.appName}/${child.modelName}/add`} >
+                                      <Link to={`/${oneApp.appName}/${child.modelName}/add`} >
                                         <Button inline primary={false} bgColor="#469408">
                                           Add
                                         </Button>
                                       </Link>
-                                      <Link to={`/${app.appName}/${child.modelName}/`}>
+                                      <Link to={`/${oneApp.appName}/${child.modelName}/`}>
                                         <Button inline primary={false} bgColor="#029acf">
                                           Change
                                         </Button>
@@ -116,7 +121,8 @@ const Dashboard = (props: AppProps) => {
                       </Card>
                     </div>
                   )
-              })}
+                }}
+              )}
             </div>
           </div>
           <div className="col-12 col-lg-3">

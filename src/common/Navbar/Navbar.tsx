@@ -61,15 +61,15 @@ const Navbar = (props: NavbarProps) => {
             </Link>
           </div>
           <div className="popup-option">
-            {/* <button onClick={logout}>
+            <button onClick={logout}>
               <FontAwesomeIcon icon={faUsers} /> Log Out
-            </button> */}
+            </button>
           </div>
-          {/* {listIncludesPermission('customuser') && (
+          {listIncludesPermission('customuser') && (
             <div className="popup-option">
               <a href={`/auth/users/${currentUser.id}/change`}> See Profile </a>
             </div>
-          )} */}
+          )}
         </Card>
       )}
     </NavbarStyled>
