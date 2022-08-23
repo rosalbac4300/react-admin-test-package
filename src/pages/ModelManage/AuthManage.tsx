@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, Routes, Route } from 'react-router-dom'
 import { Header, SuccessMessage, ComponentWrapper } from '../../common'
-import { UserList, GroupList } from '../../pages'
-//import { UserChange, UserAdd, GroupForm } from '..'
+import { UserList, GroupList, UserForm, GroupForm, UserAdd, PasswordChange } from '../../pages'
 
 const AuthManage = () => {
   const { model } = useParams()
@@ -35,28 +34,28 @@ const AuthManage = () => {
             )
           }
         />
-        {/* <Route
+        <Route
           path="/:id/change"
           element={
             model === 'users' ? (
-              <UserChange
+              <UserForm
                 setLastAction={setLastAction}
                 setNextAction={setNextAction}
                 setActionSuccessMessage={setActionSuccessMessage}
               />
-            ) : ( <></>
-              /* model === 'groups' && (
+            ) : (
+              model === 'groups' && (
                 <GroupForm
                   change
                   setLastAction={setLastAction}
                   setNextAction={setNextAction}
                   setActionSuccessMessage={setActionSuccessMessage}
                 />
-              ) *//*
+              )
             )
           }
-        /> */}
-        {/* <Route
+        />
+        <Route
           path="/:id/password"
           element={<PasswordChange setLastAction={setLastAction} setActionSuccessMessage={setActionSuccessMessage} />}
         />
@@ -69,17 +68,17 @@ const AuthManage = () => {
                 setNextAction={setNextAction}
                 setActionSuccessMessage={setActionSuccessMessage}
               />
-            ) : ( <></>
-              /* model === 'groups' && (
+            ) : (
+              model === 'groups' && (
                 <GroupForm
                   setLastAction={setLastAction}
                   setNextAction={setNextAction}
                   setActionSuccessMessage={setActionSuccessMessage}
                 />
-              ) */ /*
+              )
             )
           }
-        /> */}
+        />
       </Routes>
     </ComponentWrapper>
   )

@@ -282,6 +282,9 @@ const UserProvider = (props: UserProviderProps) => {
           }
         })
       }
+      else if(error.response.status === 400) {
+        return error.response
+      }
     }
   }
 
@@ -305,7 +308,6 @@ const UserProvider = (props: UserProviderProps) => {
         const message = 'Error with Status Code: ' + response.status
         throw new Error(message)
       }
-
       return response
     } catch (error: any) {
       if (error.response.status == 401) {
@@ -316,18 +318,19 @@ const UserProvider = (props: UserProviderProps) => {
             handleLogout()
           }
         })
+      } else if (error.response.status === 400) {
+        return error.response
       }
     }
   }
 
-  //TODO: Hacer que pida data y url
   const updateUserPassword = async (data: any) => {
     var url
 
     if(props.changePassword.slice(-1) !== '/'){
-      url = `${props.changePassword}/${data.id}`
+      url = `${props.changePassword}/${data.id}/`
     } else {
-      url = `${props.changePassword}${data.id}`
+      url = `${props.changePassword}${data.id}/`
     }
 
     try {
@@ -344,7 +347,7 @@ const UserProvider = (props: UserProviderProps) => {
 
       return response
     } catch (error: any) {
-      if (error.response.status == 401) {
+      if (error.response.status === 401) {
         handleRefreshToken().then((refresh) => {
           if (refresh === 200) {
             updatePassword(data)
@@ -352,6 +355,8 @@ const UserProvider = (props: UserProviderProps) => {
             handleLogout()
           }
         })
+      } else if (error.response.status === 400) {
+        return error.response
       }
     }
   }

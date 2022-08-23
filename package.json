@@ -1,6 +1,6 @@
 {
   "name": "@rosalbac4300/react-admin",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Database administrator in react",
   "main": "dist/cjs/index.js  ",
   "module": "dist/esm/index.js",

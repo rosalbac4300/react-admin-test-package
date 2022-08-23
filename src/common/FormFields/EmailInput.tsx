@@ -4,7 +4,7 @@ import { FormField } from './Styles'
 import { validateEmailInput } from '../../helpers/validateForm'
 
 interface EmailInputProps {
-  error: boolean, 
+  error?: boolean, 
   label: string, 
   value: string, 
   onChange(text: string, attribute: string): void, 
@@ -12,7 +12,7 @@ interface EmailInputProps {
   editable: boolean 
 }
 
-const EmailInput = ({ error, label, value, onChange, attribute, editable }: EmailInputProps) => {
+const EmailInput = ({ error = false, label, value, onChange, attribute, editable }: EmailInputProps) => {
   const onEmailChange = (e: any) => {
     const text = e.target.value
     onChange(text, attribute)

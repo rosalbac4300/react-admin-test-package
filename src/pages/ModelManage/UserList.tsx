@@ -16,15 +16,12 @@ interface UserListProps {
 const UserList = (props: UserListProps) => {
   const actions = useRef<any>()
   const { getUsers, deleteUser, listIncludesPermission } = useContext(UserContext)
+  const [users, setUsers] = useState<any[]>([])
   const [numberOfCheckedRows, setNumberOfCheckedRows] = useState(0)
   const [tableRows, setTableRows] = useState<any[]>([])
   const [allRowsSelected, setAllRowsSelected] = useState(false)
 
-  const getTableRows = (users: any[]) => {
-    if (users === null) {
-      return 0
-    }
-
+  const getTableRows = () => {
     const rows = users.map((user: any) => {
       const row = {
         ...user,
@@ -38,17 +35,21 @@ const UserList = (props: UserListProps) => {
   }
 
   useEffect(() => {
-    getUsers().then((response: any) => {
-      getTableRows(response)
+    getUsers().then((response: any[]) => {
+      setUsers(response)
     })
   }, [])
+
+  useEffect(() => {
+    getTableRows()
+  }, [users])
 
   const deleteRows = () => {
     tableRows.map((row: any) => {
       if (row.checked) {
         deleteUser(row.pk).then((data) => {
           getUsers().then((response: any) => {
-            getTableRows(response)
+            setUsers(response)
           })
         })
       }
@@ -69,7 +70,7 @@ const UserList = (props: UserListProps) => {
         setNumberOfCheckedRows(0)
 
         getUsers().then((response: any) => {
-          getTableRows(response)
+          setUsers(response)
         })
 
         break

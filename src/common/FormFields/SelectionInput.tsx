@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCircleChevronLeft, faCircleChevronRight, faCircleArrowRight, faCircleArrowLeft } from '@fortawesome/free-solid-svg-icons'
 import { FormField } from './Styles'
 
 interface SelectionInputProps {
@@ -140,19 +142,19 @@ const SelectionInput = ({ available, chosen, setChosen, setAvailable, selectionN
           </div>
           <div className="select-shortcut">
             <button type="button" onClick={handleChooseAllButton}>
-              Choose all <i className="fas fa-circle-chevron-right"></i>
+              Choose all <FontAwesomeIcon icon={faCircleChevronRight}/>
             </button>
           </div>
         </div>
         <ul className="selector-chooser">
           <li className={availableSelection.length !== 0 ? 'active' : ''}>
             <button type="button" onClick={handleChooseArrow}>
-              <i className="fa-solid fa-circle-arrow-right"></i>
+              <FontAwesomeIcon icon={faCircleArrowRight} />
             </button>
           </li>
           <li className={chosenSelection.length !== 0 ? 'active' : ''}>
             <button type="button" onClick={handleRemoveArrow}>
-              <i className="fa-solid fa-circle-arrow-left"></i>
+              <FontAwesomeIcon icon={faCircleArrowLeft} />
             </button>
           </li>
         </ul>
@@ -171,7 +173,7 @@ const SelectionInput = ({ available, chosen, setChosen, setAvailable, selectionN
           </div>
           <div className="select-shortcut">
             <button type="button" onClick={handleRemoveAllButton}>
-              <i className="fas fa-circle-chevron-left"></i> Remove all
+              <FontAwesomeIcon icon={faCircleChevronLeft} /> Remove all
             </button>
           </div>
         </div>

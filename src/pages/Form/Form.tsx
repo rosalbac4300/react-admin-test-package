@@ -67,11 +67,14 @@ const Form = (props: FormProps) => {
     if(modelsOptions !== null && modelsOptions !== undefined) {
       const attributes = Object.keys(modelsOptions.fields)
       const field: any[] = []
+      
+      var choice = {}
+      var modelForm = {}
 
       if(model !== undefined){
         const response = await getModelData(props.providerURL, props.currentModel.apiURLName)
 
-        if(id !== undefined) {
+        if(id !== undefined && props.change) {
           const apiData = response.find((item: any) => {
             if (item.pk === parseInt(id)) {
               return item
@@ -79,35 +82,57 @@ const Form = (props: FormProps) => {
           })
 
           setModelsData(apiData)
-        }
 
-        var choice = {}
-        var modelForm = {}
+          attributes.forEach((attr) => {
+            if (modelsOptions.fields[attr].required) {
+              const label = modelsOptions.fields[attr].label
+              const type = modelsOptions.fields[attr].type
 
-        attributes.forEach((attr) => {
-          if (modelsOptions.fields[attr].required) {
-            const label = modelsOptions.fields[attr].label
-            const type = modelsOptions.fields[attr].type
-
-            modelForm = {
-              ...modelForm,
-              [attr]: props.change ? apiData[attr] : ''
-            }
-
-            if (type === 'choice') {
-              choice = {
-                ...choice,
-                [attr]: modelsOptions.fields[attr].choices
+              modelForm = {
+                ...modelForm,
+                [attr]: apiData[attr]
               }
+
+              if (type === 'choice') {
+                choice = {
+                  ...choice,
+                  [attr]: modelsOptions.fields[attr].choices
+                }
+              }
+
+              field.push([label, type, attr])
             }
+          })
 
-            field.push([label, type, attr])
-          }
-        })
+          setFormData(modelForm)
+          setFields(field)
+          setChoices(choice)
+        } else {
+          attributes.forEach((attr) => {
+            if (modelsOptions.fields[attr].required) {
+              const label = modelsOptions.fields[attr].label
+              const type = modelsOptions.fields[attr].type
 
-        setFormData(modelForm)
-        setFields(field)
-        setChoices(choice)
+              modelForm = {
+                ...modelForm,
+                [attr]: ''
+              }
+
+              if (type === 'choice') {
+                choice = {
+                  ...choice,
+                  [attr]: modelsOptions.fields[attr].choices
+                }
+              }
+
+              field.push([label, type, attr])
+            }
+          })
+
+          setFormData(modelForm)
+          setFields(field)
+          setChoices(choice)
+        }  
       }
     }
   }, [modelsOptions, model, props.change])
@@ -260,10 +285,6 @@ const Form = (props: FormProps) => {
   const onclose = () => {
     navigate(`/${app}/${model}`)
   }
-
-  console.log((choices !== null && fields !== null && modelsOptions !== null), (modelsData !== null || !props.change))
-  console.log(choices, fields, modelsOptions)
-  console.log((choices !== null && fields !== null && modelsOptions !== null)  && ( modelsData !== null || !props.change))
 
   return ( 
     (choices !== null && fields !== null && modelsOptions !== null)
