@@ -1,6 +1,8 @@
 import React, { useRef, useContext, useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCirclePlus } from '@fortawesome/free-solid-svg-icons'
 import { Button, Card, ListContainer, ListTableContainer } from '../../common'
 import { UserContext } from '../../context'
 
@@ -12,15 +14,12 @@ interface GroupListProps {
 const GroupList = (props: GroupListProps) => {
   const actions = useRef<any>()
   const { getGroups, deleteGroup, listIncludesPermission } = useContext(UserContext)
+  const [groups, setGroups] = useState<any[]>([])
   const [numberOfCheckedRows, setNumberOfCheckedRows] = useState(0)
   const [tableRows, setTableRows] = useState<any[]>([])
   const [allRowsSelected, setAllRowsSelected] = useState(false)
 
-  const getTableRows = (groups: any[]) => {
-    if (groups === null) {
-      return 0
-    }
-
+  const getTableRows = () => {
     const rows = groups.map((group: any) => {
       const row = {
         ...group,
@@ -34,8 +33,12 @@ const GroupList = (props: GroupListProps) => {
   }
 
   useEffect(() => {
+    getTableRows()
+  }, [groups])
+
+  useEffect(() => {
     getGroups().then((response: any) => {
-      getTableRows(response)
+      setGroups(response)
     })
   }, [])
 
@@ -44,7 +47,7 @@ const GroupList = (props: GroupListProps) => {
       if (row.checked) {
         deleteGroup(row.pk).then((data: any) => {
           getGroups().then((response: any) => {
-            getTableRows(response)
+            setGroups(response)
           })
         })
       }
@@ -132,7 +135,7 @@ const GroupList = (props: GroupListProps) => {
                 {listIncludesPermission('auth', 'group', 'add') && (
                   <Link to={`add`}>
                     <Button inline={false} primary={false} bgColor="#469408">
-                      <i className="fa-solid fa-circle-plus"></i>
+                      <FontAwesomeIcon icon={faCirclePlus}/>
                       <span> Add Group </span>
                     </Button>
                   </Link>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useContext } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { Navbar, Sidebar, Wrapper } from '../common'
-import { Dashboard  , ModelManage, AuthManage, PasswordChange } from '../pages'
+import { Dashboard, ModelManage, AuthManage, PasswordChange } from '../pages'
 import { useWindowSize } from '../hooks'
 
 interface AppProps {
@@ -84,6 +84,8 @@ const App = (props: AppProps) => {
     setSidebarClick(false)
   }, [])
 
+  const dummy = (text: any) => {}
+
   useEffect(() => {
     openSidebar()
   }, [openSidebar])
@@ -95,7 +97,7 @@ const App = (props: AppProps) => {
         <Navbar onClick={handleClickSidebar} auth={props.auth} />
         <Routes>
           <Route path="/auth/:model/*" element={<AuthManage />} />
-         {/*  <Route path="/password_change" element={<PasswordChange currentUser />} /> */}
+          <Route path="/password_change" element={<PasswordChange currentUser setLastAction={dummy} setActionSuccessMessage={dummy} />} />
           <Route path="/:app/:model/*" element={<ModelManage apps={props.apps} auth={props.auth}/>} />
           <Route path="/:app" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
           <Route path="/" element={<Dashboard apps={props.apps} auth={props.auth}/>} />
