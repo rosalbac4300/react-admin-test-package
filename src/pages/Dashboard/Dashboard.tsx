@@ -28,7 +28,7 @@ const Dashboard = (props: AppProps) => {
       <Header title={app ? app : 'Dashboard'}/>
       <div className="body">
         <div className="row">
-          <div className="col-12 col-lg-9">
+          <div className="col-12">
             <div className="row">
             { props.auth !== null && ( !app || app === 'auth') && (
                 <div className="col-6 col-sm-12">
@@ -125,7 +125,7 @@ const Dashboard = (props: AppProps) => {
               )}
             </div>
           </div>
-          <div className="col-12 col-lg-3">
+          {/* <div className="col-12 col-lg-3">
             <h1 className="actions"> Recent actions </h1>
             <div className="row">
               <div className="col-2">
@@ -154,7 +154,7 @@ const Dashboard = (props: AppProps) => {
                     </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
