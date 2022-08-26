@@ -47,7 +47,9 @@ const Sidebar = (props: SidebarProps) => {
   }, [])
   
   const setDropdownOpenArray = useCallback(() => {
-    const array = props.apps.map((app:any) => false)
+    const array = props.apps.map((app:any) => { 
+      return false 
+    })
     setIsDropdownOpen(array)
   }, [props.apps])
   
@@ -160,7 +162,7 @@ const Sidebar = (props: SidebarProps) => {
                   </li>
                   <li>
                     <NavLink
-                      to="/auth/groups"
+                      to="/auth/users"
                       className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
                       >
                     <div className="icon">

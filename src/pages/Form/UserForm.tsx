@@ -121,8 +121,6 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
 
     if (users) {
       const user = users.find((user: any) => user.pk.toString() === id)
-      console.log(users)
-      console.log(user)
 
       if (user !== undefined) {
         dividePassword(user)

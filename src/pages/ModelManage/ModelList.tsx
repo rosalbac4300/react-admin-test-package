@@ -106,7 +106,7 @@ const ModelList = (props: ModelListProps) => {
   useEffect(() => {
     getModelList()
     getOptions()
-  }, [])
+  }, [props.model.modelName])
 
   const handleActionClick = () => {
     const selectedIndex = actions.current.options.selectedIndex
