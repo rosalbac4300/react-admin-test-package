@@ -14,7 +14,7 @@ interface GroupFormProps {
 const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, change = false} : GroupFormProps) => {
   const { id } = useParams()
 
-  const { getGroups, getPermissions, addGroup, modifyGroup, deleteGroup, listIncludesPermission } =
+  const { getGroups, getPermissions, addGroup, modifyGroup, deleteGroup, listIncludesPermission, handleLogout, handleRefreshToken } =
     useContext(UserContext)
 
   const [availablePermissions, setAvailablePermissions] = useState<any>(null)
@@ -42,16 +42,52 @@ const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, chang
 
   const navigate = useNavigate()
 
-  const getGroup = () => {
-    if (change) {
-      console.log('why is this one happening')
+  const setPermissions = async () => {
+    const response = await getPermissions()
+    if(response.status === 200){
+      if (change){
+        const availPermissions = response.data.filter((permission: any) => !group.permissions.includes(permission.pk))
+        const chPermissions = response.data.filter((permission: any) => group.permissions.includes(permission.pk))
 
-      getGroups().then((groups: any) => {
-        var group = groups.find((group: any) => {
+        setAvailablePermissions(availPermissions)
+        setChosenPermissions(chPermissions)
+      } else {
+        setAvailablePermissions(response.data)
+        setChosenPermissions([])
+      }
+    } else if (response.status === 401){
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        setPermissions()
+      } else {
+        handleLogout()
+      }
+    }
+  }
+
+  const getGroupList: any = async () => {
+    const response = await getGroups()
+    if (response.status === 200){
+      return response.data
+    } else if (response.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh){
+        const data = await getGroupList()
+        return data
+      } else {
+        handleLogout()
+      }
+    }
+  }
+
+  const getGroup = async () => {
+    if (change) {
+      const groupList = await getGroupList()
+      var group = groupList.find((group: any) => {
           if (group.pk.toString() === id) {
             return group
           }
-        })
+      })
 
         const currentGroup = {
           display_name: group.display_name,
@@ -60,32 +96,13 @@ const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, chang
         }
 
         setGroup(currentGroup)
-
-        getPermissions().then((permissions: any) => {
-          const availPermissions = permissions.filter((permission: any) => {
-            return !currentGroup.permissions.includes(permission.pk)
-          })
-
-          const chPermissions = permissions.filter((permission: any) => {
-            return currentGroup.permissions.includes(permission.pk)
-          })
-
-          setAvailablePermissions(availPermissions)
-          setChosenPermissions(chPermissions)
-        })
-      })
-    } else {
+      } else {
       const currentGroup = {
         display_name: '',
         name: '',
         permissions: []
       }
-
-      getPermissions().then((permissions: any) => {
-        setAvailablePermissions(permissions)
-        setChosenPermissions([])
-        setGroup(currentGroup)
-      })
+      setGroup(currentGroup)
     }
   }
 
@@ -105,7 +122,11 @@ const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, chang
     getUsersPermissions()
   }, [change])
 
-  const handleSave = async () => {
+  useEffect(() => {
+    setPermissions()
+  }, [group])
+
+  const handleSave:any = async () => {
     const newPermissions = chosenPermissions.map((option: any) => option.pk)
 
     const groupData = {
@@ -123,15 +144,19 @@ const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, chang
           setLastAction(`The group ${result.data.display_name} was updated successfully.`)
           setActionSuccessMessage(true)
           return result
-        }
-  
-        if (result.status === 400) {
+        } else if (result.status === 401) {
+          const refresh = await handleRefreshToken()
+          if (refresh) {
+            const data = await handleSave()
+            return data
+          } else {
+            handleLogout()
+          }
+        } else {
           setError(true)
-  
           if (result.data.name) {
             setNameError(result.data.name)
           }
-  
           return 'ERROR'
         }
       }
@@ -144,15 +169,19 @@ const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, chang
         setLastAction(`The group ${result.data.display_name} was added successfully.`)
         setActionSuccessMessage(true)
         return result
-      }
-
-      if (result.status === 400) {
+      } else if (result.status === 401) {
+        const refresh = await handleRefreshToken()
+          if (refresh) {
+            const data = await handleSave()
+            return data
+          } else {
+            handleLogout()
+          }
+      } else {
         setError(true)
-
         if (result.data.name) {
           setNameError(result.data.name)
         }
-
         return 'ERROR'
       }
     }
@@ -183,6 +212,13 @@ const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, chang
         setLastAction(`The group ${group.display_name} was deleted successfully.`)
         setNextAction('')
         navigate('/auth/groups/')
+      } else if (deleteStatus.status === 401) {
+        const refresh = await handleRefreshToken()
+          if (refresh) {
+            onDelete()
+          } else {
+            handleLogout()
+          }
       }
     }
   }
@@ -237,7 +273,7 @@ const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, chang
                       </ul>
                     )}
                   </FormField>
-                  {(availablePermissions !== null) && (chosenPermissions !== null) ? (
+                  {(availablePermissions !== null) && (chosenPermissions !== null) && (
                     <SelectionInput
                       editable={(change && userCanChange) || (!change && userCanAdd)}
                       available={availablePermissions}
@@ -246,7 +282,7 @@ const GroupForm = ({setActionSuccessMessage, setLastAction, setNextAction, chang
                       setAvailable={setAvailablePermissions}
                       selectionName="permissions"
                     />
-                  ) : null}
+                  )}
                 </div>
               </Card>
             </div>

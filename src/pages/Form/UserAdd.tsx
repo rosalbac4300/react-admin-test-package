@@ -17,7 +17,7 @@ const UserAdd = ({ setLastAction, setNextAction, setActionSuccessMessage }: User
   }
 
   const navigate = useNavigate()
-  const { registerUser } = useContext(UserContext)
+  const { registerUser, handleRefreshToken, handleLogout } = useContext(UserContext)
   const [userRegisterData, setUserRegisterData] = useState(userDataInitial)
   const [passwordField1, setPasswordField1] = useState('')
   const [passwordField2, setPasswordField2] = useState('')
@@ -49,7 +49,7 @@ const UserAdd = ({ setLastAction, setNextAction, setActionSuccessMessage }: User
     setPasswordField2(e.target.value)
   }, [])
 
-  const saveUser = async () => {
+  const saveUser:any = async () => {
     const newUser = {
       username: userRegisterData.username,
       email: userRegisterData.email,
@@ -88,6 +88,14 @@ const UserAdd = ({ setLastAction, setNextAction, setActionSuccessMessage }: User
       setActionSuccessMessage(true)
       setLastAction(`The user "${userRegisterData.username}" was added successfully.`)
       return data.data.user
+    } else if (data.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        const data = await saveUser()
+        return data
+      } else {
+        handleLogout()
+      }
     }
   }
 

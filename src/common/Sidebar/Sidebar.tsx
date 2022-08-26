@@ -15,7 +15,7 @@ import {  } from '@fortawesome/free-regular-svg-icons'
 import SidebarStyled from './Styles'
 import { useWindowSize } from '../../hooks'
 import img from '../../img/img'
-//import { DataContext, UserContext } from '../context'
+import { UserContext } from '../../context'
 
 interface SidebarProps {
   size: string,
@@ -30,27 +30,32 @@ interface SidebarProps {
     deleteUser: string,
     registerUser: string,
     changePassword: string
-  } | null
+  }
 }
 
 const Sidebar = (props: SidebarProps) => {
   const aside = useRef<any>()
   const width = useWindowSize()
- // const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
-  //const { listIncludesPermission } = useContext(UserContext)
+  const { listIncludesPermission } = useContext(UserContext)
   const [isDropdownOpen, setIsDropdownOpen] = useState<Array<boolean>>([])
+  const [user, setUser] = useState<any>({})
   const [isAuthDropdownOpen, setisAuthDropdownOpen] = useState<boolean>(false)
-
+  
   const handleDropdownAuth = useCallback(() => {
     setisAuthDropdownOpen((val) => !val)
     setDropdownOpenArray()
   }, [])
-
+  
   const setDropdownOpenArray = useCallback(() => {
     const array = props.apps.map((app:any) => false)
     setIsDropdownOpen(array)
   }, [props.apps])
-
+  
+  const getCurrentUser = useCallback(() => {
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+    setUser(currentUser)
+  }, [])
+  
   const openSidebarTransitions = useCallback(() => {
     if (props.size === '74px') {
       aside.current.style.transition = '0.5s'
@@ -91,7 +96,8 @@ const Sidebar = (props: SidebarProps) => {
 
   useEffect(() => {
     setDropdownOpenArray()
-  }, [setDropdownOpenArray])
+    getCurrentUser()
+  }, [setDropdownOpenArray, getCurrentUser])
 
   useEffect(() => {
     openSidebarTransitions()
@@ -104,11 +110,11 @@ const Sidebar = (props: SidebarProps) => {
         <img src={img.logo} height="27px" alt=""></img>
         {props.size === '250px' && <span> Admin </span>}
       </Link>
-      <Link to={`/auth/users/user}/change`} className="sb-user">
+      <Link to={`/auth/users/${user?.id}/change`} className="sb-user">
         <div className="icon">
           <FontAwesomeIcon icon={faUserCircle} />
         </div>
-        {props.size === '250px' && <span> Username </span>}
+        {props.size === '250px' && <span> {user?.username} </span>}
       </Link>
 
       <nav className="sb-navigation">
@@ -121,54 +127,52 @@ const Sidebar = (props: SidebarProps) => {
               {props.size === '250px' && <span> Dashboard </span>}
             </NavLink>
           </li>
-          {props.auth !== null && (
-            <li className="sb-nav-item">
-              <div className="sb-nav-link" onClick={handleDropdownAuth}>
-                <div className="icon">
-                  <FontAwesomeIcon icon={faUserCog} />
-                </div>
-                {props.size === '250px' && (
-                  <>
-                    <span> Authentication and  ... </span>
-                    <div className="arrow">
-                      { isAuthDropdownOpen ? 
-                        <FontAwesomeIcon icon={faAngleLeft} rotation={270}/> :
-                        <FontAwesomeIcon icon={faAngleLeft} />
-                      }
-                    </div>
-                  </>
-                )}
+          <li className="sb-nav-item">
+            <div className="sb-nav-link" onClick={handleDropdownAuth}>
+              <div className="icon">
+                <FontAwesomeIcon icon={faUserCog} />
               </div>
-              <ul className="nav nav-child">
-                { isAuthDropdownOpen && (
-                  <>
-                    <li className="sb-nav-item">
-                      <NavLink
-                        to="/auth/groups"
-                        className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
-                        >
-                      <div className="icon">
-                        <FontAwesomeIcon icon={faUsers}/>
-                      </div>
-                        {props.size === '250px' && <span> Groups </span>}
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/auth/groups"
-                        className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
-                        >
-                      <div className="icon">
-                        <FontAwesomeIcon icon={faUsers}/>
-                      </div>
-                        {props.size === '250px' && <span> Users </span>}
-                      </NavLink>
-                    </li>
-                  </>
-                )}
-              </ul>
-            </li>
-          )}
+              {props.size === '250px' && (
+                <>
+                  <span> Authentication and  ... </span>
+                  <div className="arrow">
+                    { isAuthDropdownOpen ? 
+                      <FontAwesomeIcon icon={faAngleLeft} rotation={270}/> :
+                      <FontAwesomeIcon icon={faAngleLeft} />
+                    }
+                  </div>
+                </>
+              )}
+            </div>
+            <ul className="nav nav-child">
+              { isAuthDropdownOpen && (
+                <>
+                  <li className="sb-nav-item">
+                    <NavLink
+                      to="/auth/groups"
+                      className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
+                      >
+                    <div className="icon">
+                      <FontAwesomeIcon icon={faUsers}/>
+                    </div>
+                      {props.size === '250px' && <span> Groups </span>}
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/auth/groups"
+                      className={({ isActive }) => (isActive ? 'sb-nav-link nav-child-active' : 'sb-nav-link')}
+                      >
+                    <div className="icon">
+                      <FontAwesomeIcon icon={faUsers}/>
+                    </div>
+                      {props.size === '250px' && <span> Users </span>}
+                    </NavLink>
+                  </li>
+                </>
+              )}
+            </ul>
+          </li>
           {(props.apps.length !== 0 && isDropdownOpen.length !== 0) && (
             <>
             { props.apps.map((app :  any, i : number) => {

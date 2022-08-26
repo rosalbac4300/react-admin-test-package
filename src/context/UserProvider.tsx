@@ -75,9 +75,9 @@ const UserProvider = (props: UserProviderProps) => {
         localStorage.setItem('user', user || '')
       }
 
-      return 200
+      return true
     } catch (error) {
-      return 400
+      return false
     }
   } 
 
@@ -100,19 +100,15 @@ const UserProvider = (props: UserProviderProps) => {
         headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
       })
 
-      return resultUsers.data
-    } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
-          if (refresh === 200) {
-            getUsers()
-          } else {
-            if (window.location.pathname.split('/').pop() !== 'login') {
-              handleLogout()
-            }
-          }
-        })
+      if (resultUsers.status !== 200) {
+        const message = 'Error with Status Code: ' + resultUsers.status
+        throw new Error(message)
       }
+
+      return resultUsers
+
+    } catch (error: any) {
+      return error.response
     }
   }
 
@@ -130,19 +126,9 @@ const UserProvider = (props: UserProviderProps) => {
         headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
       })
 
-      return resultGroups.data
+      return resultGroups
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
-          if (refresh === 200) {
-            getGroups()
-          } else {
-            if (window.location.pathname.split('/').pop() !== 'login') {
-              handleLogout()
-            }
-          }
-        })
-      }
+      return error.response
     }
   }
 
@@ -160,19 +146,9 @@ const UserProvider = (props: UserProviderProps) => {
         headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
       })
 
-      return resultPermissions.data
+      return resultPermissions
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
-          if (refresh === 200) {
-            getPermissions()
-          } else {
-            if (window.location.pathname.split('/').pop() !== 'login') {
-              handleLogout()
-            }
-          }
-        })
-      }
+      return error.response
     }
   }
 
@@ -201,17 +177,9 @@ const UserProvider = (props: UserProviderProps) => {
         throw new Error(message)
       }
 
-      return 'OK'
+      return response
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
-          if (refresh === 200) {
-            deleteUser(id)
-          } else {
-            handleLogout()
-          }
-        })
-      }
+      return error.response
     }
   }
 
@@ -231,22 +199,14 @@ const UserProvider = (props: UserProviderProps) => {
         }
       })
 
-      if (response.statusText !== 'OK') {
+      if (response.status !== 200) {
         const message = 'Error with Status Code: ' + response.status
         throw new Error(message)
       }
 
-      return 'OK'
+      return response
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
-          if (refresh === 200) {
-            modifyUser(data, id)
-          } else {
-            handleLogout()
-          }
-        })
-      }
+      return error.response
     }
   }
 
@@ -273,18 +233,7 @@ const UserProvider = (props: UserProviderProps) => {
 
       return response
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
-          if (refresh === 200) {
-            registerUser(data)
-          } else {
-            handleLogout()
-          }
-        })
-      }
-      else if(error.response.status === 400) {
-        return error.response
-      }
+      return error.response
     }
   }
 
@@ -310,17 +259,7 @@ const UserProvider = (props: UserProviderProps) => {
       }
       return response
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh) => {
-          if (refresh === 200) {
-            updatePassword(data)
-          } else {
-            handleLogout()
-          }
-        })
-      } else if (error.response.status === 400) {
-        return error.response
-      }
+      return error.response
     }
   }
 
@@ -347,17 +286,7 @@ const UserProvider = (props: UserProviderProps) => {
 
       return response
     } catch (error: any) {
-      if (error.response.status === 401) {
-        handleRefreshToken().then((refresh) => {
-          if (refresh === 200) {
-            updatePassword(data)
-          } else {
-            handleLogout()
-          }
-        })
-      } else if (error.response.status === 400) {
-        return error.response
-      }
+      return error.response
     }
   }
 

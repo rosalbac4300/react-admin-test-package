@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useContext, useEffect } from 'react'
-import PropTypes from 'prop-types'
+import PropTypes, { any } from 'prop-types'
 import { useParams, useNavigate } from 'react-router-dom'
 import { validateInput, validateEmailInput } from '../../helpers/validateForm'
 import {
@@ -42,7 +42,7 @@ const Form = (props: FormProps) => {
   const navigate = useNavigate()
   const { id, model, app } = useParams()
   const { getModelOptions, getModelData, modifyItem, deleteItem, addItem } = useContext(DataContext)
-  const { listIncludesPermission } = useContext(UserContext)
+  const { listIncludesPermission, handleLogout, handleRefreshToken } = useContext(UserContext)
 
   /*
       fields will be an array of arrays, where for each array:
@@ -57,11 +57,28 @@ const Form = (props: FormProps) => {
   const [formData, setFormData] = useState<any>(null)
 
   const [actionErrorMessage, setActionErrorMessage] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const [userCanAdd, setUserCanAdd] = useState(false)
   const [userCanView, setUserCanView] = useState(false)
   const [userCanChange, setUserCanChange] = useState(false)
   const [userCanDelete, setUserCanDelete] = useState(false)
+
+  const getData : any = async () => {
+    const response = await getModelData(props.providerURL, props.currentModel.apiURLName)
+
+    if(response.status === 200) {
+      return response.data
+    } else if (response.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        const data = await getData()
+        return data
+      } else {
+        handleLogout()
+      }
+    }
+  }
 
   const getFields = useCallback(async () => {
     if(modelsOptions !== null && modelsOptions !== undefined) {
@@ -72,7 +89,7 @@ const Form = (props: FormProps) => {
       var modelForm = {}
 
       if(model !== undefined){
-        const response = await getModelData(props.providerURL, props.currentModel.apiURLName)
+        const response = await getData()
 
         if(id !== undefined && props.change) {
           const apiData = response.find((item: any) => {
@@ -140,7 +157,17 @@ const Form = (props: FormProps) => {
   const getOptions = useCallback(async () => {
     if (model !== undefined) {
       const response = await getModelOptions(props.providerURL, props.currentModel.apiURLName)
-      setModelsOptions(response)
+
+      if(response.status === 200){
+        setModelsOptions(response.data)
+      } else if (response.status === 401){
+        const refresh = await handleRefreshToken()
+        if(refresh){
+          getOptions()
+        } else {
+          handleLogout()
+        }
+      }
     }
   }, [model])
 
@@ -156,9 +183,11 @@ const Form = (props: FormProps) => {
   }, [getOptions])
 
   useEffect(() => {
-    getFields()
-    getPermissions()
-  }, [getFields, getPermissions])
+    if(modelsOptions !== null && modelsOptions !== undefined){
+      getFields()
+      getPermissions()
+    }
+  }, [getFields, getPermissions, modelsOptions])
 
   const handleInputChange = (value: any, attribute: string) => {
     const newData = {
@@ -175,17 +204,41 @@ const Form = (props: FormProps) => {
 
       if (status.status === 200) {
         props.setActionSuccessMessage(true)
+        setActionErrorMessage(false)
         props.setLastAction(`The ${props.currentModel.modelName} ${modelsData.display_name} was changed successfully.`)
+      } else if (status.status === 401){
+        const refresh = await handleRefreshToken()
+        if (refresh) {
+          saveChanges()
+        } else {
+          handleLogout()
+        }
+      } else {
+        setActionErrorMessage(true)
       }
     }
   }
 
   const addNewItem = async () => {
     if (model !== undefined) {
-      const addedItem = await addItem(props.providerURL, props.currentModel.apiURLName, formData)
-      props.setActionSuccessMessage(true)
-      props.setLastAction(`The ${props.currentModel.modelName} ${addedItem.display_name} was added successfully.`)
-      return addedItem
+      const response = await addItem(props.providerURL, props.currentModel.apiURLName, formData)
+
+      if (response.status === 201){
+        props.setActionSuccessMessage(true)
+        setActionErrorMessage(false)
+        props.setLastAction(`The ${props.currentModel.modelName} ${response.data.display_name} was added successfully.`)
+        return response.data
+      } else if (response.status === 401) {
+        const refresh = await handleRefreshToken()
+        if (refresh) {
+          addNewItem()
+        } else {
+          handleLogout()
+        }
+      } else {
+        setActionErrorMessage(true)
+        return false
+      }
     }
   }
 
@@ -238,15 +291,26 @@ const Form = (props: FormProps) => {
 
   const onDelete = async () => {
     if(model !== undefined) {
-      const status = await deleteItem(props.providerURL, props.currentModel.apiURLName, modelsData.pk)
+      const response = await deleteItem(props.providerURL, props.currentModel.apiURLName, modelsData.pk)
   
-      if (status.status === 204) {
+      if (response.status === 204) {
+        setActionErrorMessage(false)
+        setErrorMessage('')
         props.setActionSuccessMessage(true)
         props.setLastAction(`Successfully deleted the ${props.currentModel.modelName} ${modelsData.display_name}.`)
+        props.setNextAction('')
+        navigate(`/${app}/${model}`)
+      } else if (response.status === 401) {
+        const refresh = await handleRefreshToken()
+        if (refresh){
+          onDelete()
+        } else {
+          handleLogout()
+        }
+      } else {
+        setActionErrorMessage(true)
+        setErrorMessage("Couldn't delete item.")
       }
-  
-      props.setNextAction('')
-      navigate(`/${app}/${model}`)
     }
   }
 
@@ -273,13 +337,17 @@ const Form = (props: FormProps) => {
 
     if (props.change) {
       saveChanges()
+      props.setNextAction('You may edit it again below')
     } else {
       const addedItem = await addNewItem()
-      const id = addedItem.pk
-      navigate(`/${app}/${model}/${id}/change`)
+
+      if(addedItem) {
+        const id = addedItem.pk
+        navigate(`/${app}/${model}/${id}/change`)
+        props.setNextAction('You may edit it again below')
+      }
     }
 
-    props.setNextAction('You may edit it again below')
   }
 
   const onclose = () => {
@@ -292,7 +360,8 @@ const Form = (props: FormProps) => {
       modelsData !== null || !props.change
     ) ? (
     <ListContainer>
-      {actionErrorMessage && <ErrorMessage />}
+      {actionErrorMessage && 
+        (errorMessage === '' ? <ErrorMessage /> : <ErrorMessage message={errorMessage}/>)}
         <form className="col-12" onSubmit={onSubmit}>
           <div className="row">
             <div className="col-lg-9 col-sm-12 col-md-12">

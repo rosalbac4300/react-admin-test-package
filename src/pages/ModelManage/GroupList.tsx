@@ -13,7 +13,7 @@ interface GroupListProps {
 
 const GroupList = (props: GroupListProps) => {
   const actions = useRef<any>()
-  const { getGroups, deleteGroup, listIncludesPermission } = useContext(UserContext)
+  const { getGroups, deleteGroup, listIncludesPermission, handleRefreshToken, handleLogout } = useContext(UserContext)
   const [groups, setGroups] = useState<any[]>([])
   const [numberOfCheckedRows, setNumberOfCheckedRows] = useState(0)
   const [tableRows, setTableRows] = useState<any[]>([])
@@ -32,24 +32,52 @@ const GroupList = (props: GroupListProps) => {
     setTableRows(rows)
   }
 
+  const getGroupList = async () => {
+    const response = await getGroups()
+
+    if(response.status === 200) {
+      setGroups(response.data)
+    } else {
+      if (response.status == 401) {
+        const refresh = await handleRefreshToken()
+          if (refresh) {
+            getGroupList()
+          } else {
+            handleLogout()
+          }
+      } 
+    }
+  }
+
   useEffect(() => {
-    getTableRows()
+    if(groups !== undefined){
+      getTableRows()
+    }
   }, [groups])
 
   useEffect(() => {
-    getGroups().then((response: any) => {
-      setGroups(response)
-    })
+    getGroupList()
   }, [])
 
-  const deleteRows = async () => {
+  const deleteElement = async (id: string) => {
+    const response = await deleteGroup(id)
+    if(response.status === 204) {
+      getGroupList()
+    }
+    if(response.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        deleteElement(id)
+      } else {
+        handleLogout()
+      }
+    }
+  }
+
+  const deleteRows = () => {
     tableRows.map((row) => {
       if (row.checked) {
-        deleteGroup(row.pk).then((data: any) => {
-          getGroups().then((response: any) => {
-            setGroups(response)
-          })
-        })
+        deleteElement(row.pk)
       }
     })
   }
@@ -62,11 +90,8 @@ const GroupList = (props: GroupListProps) => {
       case 'delete':
         deleteRows()
         props.setActionSuccessMessage(true)
-
         props.setLastAction(`Successfully deleted ${numberOfCheckedRows} ${numberOfCheckedRows !== 1 ? 'groups' : 'group'}.`)
-
         setNumberOfCheckedRows(0)
-
         break
       default:
         break
@@ -114,7 +139,6 @@ const GroupList = (props: GroupListProps) => {
         <div className="card-header">
           <p> Select Group to change </p>
         </div>
-        {tableRows !== null && (
           <div className="card-body">
             <div className="row divide">
               <div className="col-8 col-sm-12">
@@ -122,7 +146,7 @@ const GroupList = (props: GroupListProps) => {
                   <option value="">-----------</option>
                   {listIncludesPermission('auth', 'group', 'delete') && (
                     <option value="delete">Delete selected groups</option>
-                  )}
+                    )}
                 </select>
                 <Button inline={false} primary={false} bgColor="crimson" type="button" onClick={handleActionClick}>
                   Go
@@ -142,6 +166,7 @@ const GroupList = (props: GroupListProps) => {
                 )}
               </div>
             </div>
+          {tableRows.length !== 0 && (
             <ListTableContainer>
               <table>
                 <thead>
@@ -170,8 +195,8 @@ const GroupList = (props: GroupListProps) => {
                 </tbody>
               </table>
             </ListTableContainer>
-          </div>
-        )}
+          )}
+        </div>
       </Card>
     </ListContainer>
   )

@@ -21,8 +21,6 @@ interface DataProviderProps {
 }
 
 const DataProvider = (props: DataProviderProps) => {
-  const { handleLogout, handleRefreshToken } = useContext(UserContext)
-
   const getModelData = async (providerURL: string, model: string) => {
     const url = `${providerURL}/${model}/`
 
@@ -31,18 +29,9 @@ const DataProvider = (props: DataProviderProps) => {
         headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
       })
 
-      return data.data
+      return data
     } catch (error: any) {
-      if (error.response.status == 401) {
-        const refresh = await handleRefreshToken()
-        if (refresh === 200) {
-          getModelData(providerURL, model)
-        } else {
-          if (window.location.pathname.split('/').pop() !== 'login') {
-            handleLogout()
-          }
-        }
-      }
+      return error.response
     }
   }
 
@@ -56,19 +45,9 @@ const DataProvider = (props: DataProviderProps) => {
         headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
       })
 
-      return options.data
+      return options
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh: any) => {
-          if (refresh === 200) {
-            getModelOptions(providerURL, model)
-          } else {
-            if (window.location.pathname.split('/').pop() !== 'login') {
-              handleLogout()
-            }
-          }
-        })
-      }
+      return error.response
     }
   }
 
@@ -87,42 +66,27 @@ const DataProvider = (props: DataProviderProps) => {
 
       return response
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh: any) => {
-          if (refresh === 200) {
-            modifyItem(providerURL, model, id, object)
-          } else {
-            handleLogout()
-          }
-        })
-      }
+      return error.response
     }
   }
 
   const addItem = async (providerURL: string, model: string, object: object) => {
     const url = `${providerURL}/${model}/`
 
-    const response = await axios.post(url, object, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
-    })
-
+    
     try {
+      const response = await axios.post(url, object, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access')}` }
+      })
+      
       if (response.status !== 200 && response.status !== 201) {
         const message = 'Error with Status Code: ' + response.status
         throw new Error(message)
       }
 
-      return response.data
+      return response
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh: any) => {
-          if (refresh === 200) {
-            addItem(providerURL, model, object)
-          } else {
-            handleLogout()
-          }
-        })
-      }
+      return error.response
     }
   }
 
@@ -141,15 +105,7 @@ const DataProvider = (props: DataProviderProps) => {
 
       return response
     } catch (error: any) {
-      if (error.response.status == 401) {
-        handleRefreshToken().then((refresh: any) => {
-          if (refresh === 200) {
-            deleteItem(providerURL, model, id)
-          } else {
-            handleLogout()
-          }
-        })
-      }
+      return error.response
     }
   }
 

@@ -15,7 +15,7 @@ interface UserListProps {
 
 const UserList = (props: UserListProps) => {
   const actions = useRef<any>()
-  const { getUsers, deleteUser, listIncludesPermission } = useContext(UserContext)
+  const { getUsers, deleteUser, listIncludesPermission, handleRefreshToken, handleLogout } = useContext(UserContext)
   const [users, setUsers] = useState<any[]>([])
   const [numberOfCheckedRows, setNumberOfCheckedRows] = useState(0)
   const [tableRows, setTableRows] = useState<any[]>([])
@@ -34,24 +34,52 @@ const UserList = (props: UserListProps) => {
     setTableRows(rows)
   }
 
+  const getUserList = async () => {
+    const response = await getUsers()
+
+    if(response.status === 200) {
+      setUsers(response.data)
+    } else {
+      if (response.status == 401) {
+        const refresh = await handleRefreshToken()
+          if (refresh) {
+            getUserList()
+          } else {
+            handleLogout()
+          }
+      } 
+    }
+  }
+
   useEffect(() => {
-    getUsers().then((response: any[]) => {
-      setUsers(response)
-    })
+    getUserList()
   }, [])
 
   useEffect(() => {
-    getTableRows()
+    if(users !== undefined){
+      getTableRows()
+    }
   }, [users])
+
+  const deleteElement = async (id: string) => {
+    const response = await deleteUser(id)
+    if(response.status === 204) {
+      getUserList()
+    }
+    if(response.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        deleteElement(id)
+      } else {
+        handleLogout()
+      }
+    }
+  }
 
   const deleteRows = () => {
     tableRows.map((row: any) => {
       if (row.checked) {
-        deleteUser(row.pk).then((data) => {
-          getUsers().then((response: any) => {
-            setUsers(response)
-          })
-        })
+        deleteElement(row.pk)
       }
     })
   }
@@ -64,15 +92,8 @@ const UserList = (props: UserListProps) => {
       case 'delete':
         deleteRows()
         props.setActionSuccessMessage(true)
-
         props.setLastAction(`Successfully deleted ${numberOfCheckedRows} ${numberOfCheckedRows !== 1 ? 'users' : 'user'}.`)
-
         setNumberOfCheckedRows(0)
-
-        getUsers().then((response: any) => {
-          setUsers(response)
-        })
-
         break
       default:
         break
@@ -144,7 +165,7 @@ const UserList = (props: UserListProps) => {
             </Button>
           </div>
         </div>
-        {tableRows !== null && (
+        {tableRows.length !== 0 && (
           <div className="card-body">
             <div className="row divide">
               <div className="col-8 col-sm-12">

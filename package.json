@@ -1,6 +1,6 @@
 {
   "name": "@rosalbac4300/react-admin",
-  "version": "0.0.10",
+  "version": "0.0.14",
   "description": "Database administrator in react",
   "main": "dist/cjs/index.js  ",
   "module": "dist/esm/index.js",
@@ -40,6 +40,7 @@
   "peerDependencies": {
     "react": "18.x",
     "react-dom": "18.x",
+    "react-router-dom": "^6.3.0",
     "styled-components": "^5.x",
     "tslib": "^2.4.0"
   },
@@ -53,7 +54,6 @@
     "axios-auth-refresh": "^3.2.2",
     "prop-types": "^15.8.1",
     "react-datepicker": "^4.8.0",
-    "react-router-dom": "^6.3.0",
     "use-react-router-breadcrumbs": "^3.2.1"
   }
 }

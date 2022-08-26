@@ -54,7 +54,9 @@ const ListTable = (props: ListTableProps) => {
   }, [props.modelsOptions, props.model, props.modelsData])
 
   useEffect(() => {
-    getColumnNamesAndTableRows()
+    if(props.modelsData !== undefined && props.modelsOptions !== undefined){
+      getColumnNamesAndTableRows()
+    }
   }, [getColumnNamesAndTableRows])
 
   const handleRowCheckClick = (index: any) => {

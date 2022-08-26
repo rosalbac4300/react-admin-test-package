@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCirclePlus } from '@fortawesome/free-solid-svg-icons'
 import { Link, useParams } from 'react-router-dom'
-import { Card, Button, ListContainer } from '../../common'
+import { Card, Button, ListContainer, ErrorMessage } from '../../common'
 import { DataContext, UserContext } from '../../context'
 import ListTable from './ListTable'
 
@@ -31,27 +31,81 @@ const ModelList = (props: ModelListProps) => {
   })
   const [tableRows, setTableRows] = useState<any[]>([])
   const { getModelData, getModelOptions, deleteItem } = useContext(DataContext)
-  const { listIncludesPermission } = useContext(UserContext)
+  const { listIncludesPermission, handleLogout, handleRefreshToken } = useContext(UserContext)
+  
+  const [actionErrorMessage, setActionErrorMessage] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const deleteElement = async (id: string) => {
+    const response = await deleteItem(props.providerURL, props.model.apiURLName, id)
+    
+    if(response.status === 204) {
+      getModelList()
+      setActionErrorMessage(false)
+      setErrorMessage('')
+      setNumberOfCheckedRows((numberOfCheckedRows) => numberOfCheckedRows -1)
+    } else if(response.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        deleteElement(id)
+      } else {
+        handleLogout()
+      }
+    } else {
+      setActionErrorMessage(true)
+      setErrorMessage("Couldn't delete items")
+      props.setActionSuccessMessage(false)
+    }
+  }
 
   const deleteRows = () => {
     tableRows.map((row) => {
       if (row.checked && props.model !== undefined) {
-        deleteItem(props.providerURL, props.model.apiURLName, row.pk).then((data) => {
-          getModelData(props.providerURL, props.model.apiURLName).then((response) => {
-            setModelsData(response) 
-          })
-        })
+        deleteElement(row.pk)
       }
     })
+
+    if(!actionErrorMessage){
+      props.setActionSuccessMessage(true)
+      props.setLastAction(
+        `Successfully deleted ${numberOfCheckedRows} ${numberOfCheckedRows !== 1 ? props.model.modelNamePlural : props.model.modelName}.`
+      )
+    }
+  }
+
+  const getModelList = async () => {
+    const response = await getModelData(props.providerURL, props.model.apiURLName)
+
+    if (response.status === 200){
+      setModelsData(response.data)
+    } else if (response.status === 401){
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        getModelList()
+      } else {
+        handleLogout()
+      }
+    }
+  }
+
+  const getOptions = async () => {
+    const response = await getModelOptions(props.providerURL, props.model.apiURLName)
+
+    if (response.status === 200){
+      setModelsOptions(response.data)
+    } else if (response.status === 401){
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        getOptions()
+      } else {
+        handleLogout()
+      }
+    }
   }
 
   useEffect(() => {
-    getModelData(props.providerURL, props.model.apiURLName).then((response) => {
-      setModelsData(response)
-    })
-    getModelOptions(props.providerURL, props.model.apiURLName).then((response) => {
-      setModelsOptions(response)
-    })
+    getModelList()
+    getOptions()
   }, [])
 
   const handleActionClick = () => {
@@ -61,22 +115,20 @@ const ModelList = (props: ModelListProps) => {
     switch (optionValue) {
       case 'delete':
         deleteRows()
-        props.setActionSuccessMessage(true)
-        props.setLastAction(
-          `Successfully deleted ${numberOfCheckedRows} ${numberOfCheckedRows !== 1 ? props.model.modelNamePlural : props.model.modelName}.`
-        )
-        setNumberOfCheckedRows(0)
+        
         break
       default:
         break
     }
   }
 
-  return modelsData !== undefined && modelsOptions !== undefined ? (
+  return (
       <ListContainer>
+        {actionErrorMessage && 
+        (errorMessage === '' ? <ErrorMessage /> : <ErrorMessage message={errorMessage}/>)}
         <Card noColouredBorder = { false } className="col-12">
           <div className="card-header"> Select {props.model.modelName} to change </div>
-          <div className="card-body">
+          {modelsData !== undefined && modelsOptions !== undefined && (<div className="card-body">
             <div className="row divide">
               <div className="col-8 col-sm-12">
                 <select className="text-field" ref={actions}>
@@ -126,10 +178,10 @@ const ModelList = (props: ModelListProps) => {
             <div>
               {modelsData.length} {props.model.modelNamePlural}
             </div>
-          </div>
+          </div>)}
         </Card>
       </ListContainer>
-    ) : (<></>)
+    )
 }
 
 

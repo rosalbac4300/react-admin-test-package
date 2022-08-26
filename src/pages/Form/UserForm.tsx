@@ -14,7 +14,7 @@ interface UserFormProps {
 const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserFormProps) => {
   const { id } = useParams()
 
-  const { deleteUser, modifyUser, getUsers, getGroups, getPermissions, listIncludesPermission } =
+  const { deleteUser, modifyUser, getUsers, getGroups, getPermissions, listIncludesPermission, handleLogout, handleRefreshToken } =
     useContext(UserContext)
 
   const navigate = useNavigate()
@@ -33,6 +33,7 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
     hash: ''
   })
   const [actionErrorMessage, setActionErrorMessage] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const [userCanAdd, setUserCanAdd] = useState(false)
   const [userCanView, setUserCanView] = useState(false)
@@ -61,31 +62,93 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
     }
   }
 
-  const getUser = () => {
-    getUsers().then((users: any) => {
+  const getUserList: any = async () => {
+    const response = await getUsers()
+
+    if (response.status === 200) {
+      return response.data
+    } else if (response.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        const data = getUserList()
+        return data
+      } else {
+        handleLogout()
+      }
+    } else {
+      return false
+    }
+  }
+
+  const getGroupList: any = async () => {
+    const response = await getGroups()
+
+    if (response.status === 200) {
+      return response.data
+    } else if (response.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        const data = getGroupList()
+        return data
+      } else {
+        handleLogout()
+      }
+    } else {
+      return false
+    }
+  }
+
+  const getPermissionList: any = async () => {
+    const response = await getPermissions()
+
+    if (response.status === 200) {
+      return response.data
+    } else if (response.status === 401) {
+      const refresh = await handleRefreshToken()
+      if (refresh) {
+        const data = getPermissionList()
+        return data
+      } else {
+        handleLogout()
+      }
+    } else {
+      return false
+    }
+  }
+
+  const getUser = async () => {
+    const users = await getUserList()
+
+    if (users) {
       const user = users.find((user: any) => user.pk.toString() === id)
+      console.log(users)
+      console.log(user)
 
       if (user !== undefined) {
         dividePassword(user)
         setUserData(user)
+        
+        const groups = await getGroupList()
 
-        getGroups().then((groups: any) => {
+        if (groups) {
           const allGroups = groups
           const userGroups = user.groups
 
           const availGroups = allGroups.filter((permission: any) => {
             return !userGroups.includes(permission.pk)
           })
-
+  
           const chGroups = allGroups.filter((permission: any) => {
             return userGroups.includes(permission.pk)
           })
 
           setAvailableGroups(availGroups)
           setChosenGroups(chGroups)
-        })
+        }
+      
+        const permissions = await getPermissionList()
 
-        getPermissions().then((permissions: any) => {
+        if (permissions) {
           const availPermissions = permissions.filter((permission: any) => {
             return !user.user_permissions.includes(permission.pk)
           })
@@ -96,15 +159,16 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
 
           setAvailablePermissions(availPermissions)
           setChosenPermissions(chPermissions)
-        })
+        }
+
       }
-    })
+    }
   }
 
   useEffect(() => {
     getUser()
     getUsersPermissions()
-  }, [])
+  }, [id])
 
   const handleInputChange = (value: string, attribute: string) => {
     const newUserData = {
@@ -126,7 +190,7 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
     })
   }
 
-  const handleSave = async () => {
+  const handleSave: any = async () => {
     const newPermissions = chosenPermissions.map((option: any) => option.pk)
     const newGroups = chosenGroups.map((option: any) => option.pk)
 
@@ -138,15 +202,23 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
 
     if(id !== undefined){
       const answer = await modifyUser(newUserData, id)
-  
-      if (answer === 'OK') {
+
+      if (answer.status  === 200) {
         setLastAction(`The user ${userData.display_name} was updated successfully.`)
         setActionSuccessMessage(true)
         setActionErrorMessage(false)
-        return 'OK'
+        return true
+      } else if (answer.status === 401) {
+        const refresh = await handleRefreshToken()
+        if (refresh) {
+          const data = handleSave()
+          return data
+        } else {
+          handleLogout()
+        }
       } else {
         setActionErrorMessage(true)
-        return 'ERROR'
+        return false
       }
     }
   }
@@ -165,7 +237,7 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
     } else {
       const response = await handleSave()
 
-      if (response === 'OK') {
+      if (response) {
         if (userCanView) {
           navigate(`/auth/users`)
         } else {
@@ -179,10 +251,22 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
     if(id !== undefined) {
       const response = await deleteUser(id)
   
-      if (response === 'OK') {
+      if (response.status === 200 ) {
         setActionSuccessMessage(true)
+        setActionErrorMessage(false)
+        setErrorMessage('')
         setLastAction(`The user ${userData.display_name} was deleted successfully.`)
         navigate('/auth/users/')
+      } else if (response.status === 401) {
+        const refresh = await handleRefreshToken()
+        if (refresh) {
+          onDelete()
+        } else {
+          handleLogout()
+        }
+      } else {
+        setActionErrorMessage(true)
+        setErrorMessage('Could not delete user.')
       }
     }
   }
@@ -193,7 +277,7 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
     } else {
       const response = await handleSave()
 
-      if (response === 'OK') {
+      if (response) {
         setNextAction('You may add another user below.')
         navigate('/auth/users/add')
       }
@@ -206,9 +290,9 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
     } else {
       const response = await handleSave()
 
-      if (response === 'OK') {
+      if (response) {
         setActionSuccessMessage(true)
-        setNextAction('You may add another user below.')
+        setNextAction('You may continue editing below.')
       }
     }
   }
@@ -223,7 +307,8 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
 
   return (
     <ListContainer>
-      {actionErrorMessage && <ErrorMessage />}
+      {actionErrorMessage && 
+        ( errorMessage === '' ? <ErrorMessage /> : <ErrorMessage message={errorMessage} />) }
       <form className="col-12" onSubmit={handleSubmit}>
         <div className="row">
           <div className="col-lg-9 col-sm-12 col-md-12">
@@ -363,26 +448,22 @@ const UserForm = ({setActionSuccessMessage, setLastAction, setNextAction}: UserF
                           </p>
                         </div>
                       </FormField>
-                      {(chosenGroups.length !== 0) && (availableGroups.length !== 0) ? (
-                        <SelectionInput
-                          editable={userCanChange}
-                          chosen={chosenGroups}
-                          available={availableGroups}
-                          setChosen={setChosenGroups}
-                          setAvailable={setAvailableGroups}
-                          selectionName={'groups'}
-                        />
-                      ) : null}
-                      {(chosenPermissions.length !== 0) && (availablePermissions.length !== 0) ? (
-                        <SelectionInput
-                          editable={userCanChange}
-                          chosen={chosenPermissions}
-                          available={availablePermissions}
-                          setChosen={setChosenPermissions}
-                          setAvailable={setAvailablePermissions}
-                          selectionName={'user permissions'}
-                        />
-                      ) : null}
+                      <SelectionInput
+                        editable={userCanChange}
+                        chosen={chosenGroups}
+                        available={availableGroups}
+                        setChosen={setChosenGroups}
+                        setAvailable={setAvailableGroups}
+                        selectionName={'groups'}
+                      />
+                      <SelectionInput
+                        editable={userCanChange}
+                        chosen={chosenPermissions}
+                        available={availablePermissions}
+                        setChosen={setChosenPermissions}
+                        setAvailable={setAvailablePermissions}
+                        selectionName={'user permissions'}
+                      />
                     </div>
                   </Card>
                 </div>

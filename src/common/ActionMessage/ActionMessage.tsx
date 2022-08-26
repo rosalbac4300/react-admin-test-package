@@ -1,6 +1,6 @@
-import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
+import React from 'react'
 
 interface MessageCardProps {
     error?: boolean
@@ -18,8 +18,12 @@ const MessageCard = styled.div<MessageCardProps>`
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.13), 0 0 3px rgba(0, 0, 0, 0.2);
 `
 
-const ErrorMessage = () => {
-  return <MessageCard error> Please correct the error below.</MessageCard>
+interface ErrorProps {
+  message?: string
+}
+
+const ErrorMessage = ({ message = 'Please correct the error below.'}: ErrorProps) => {
+  return <MessageCard error>{message}</MessageCard>
 }
 
 const SuccessCard = (props: { message: string }) => {
